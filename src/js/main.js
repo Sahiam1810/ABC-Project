@@ -1,5 +1,9 @@
+import '../components/header.js';
 import { loadPage } from './router.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadPage('home'); // Página inicial al abrir el sitio
+    const app = document.getElementById('app');
+    app.insertAdjacentHTML('beforebegin', '<main-header></main-header>');
+    loadPage('home');
 });
+
