@@ -1,10 +1,10 @@
 export function write( dbName, data ){
-    const dataString = JSON.stringify(data);
-    localStorage.setItem(dbName, dataString);
+    console.log("[storage] write ->", dbName, data);
+    localStorage.setItem(dbName, JSON.stringify(data));
 }
 
-export function read(dbName){
-    const dataObject = localStorage.getItem(dbName);
-    const data = dataObject == null ? [] : JSON.parse(dataObject);
-    return data;
+export function read(dbName) {
+  const raw = localStorage.getItem(dbName);
+  console.log("[storage] read ->", dbName, raw);
+  try { return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
