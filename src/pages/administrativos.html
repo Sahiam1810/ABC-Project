@@ -1,1 +1,39 @@
-<h2>Página de admins</h2>
+<section id="admin-section">
+    <h2>Gestión de Administrativos</h2>
+
+    <form id="frmAdmin">
+        <table>
+            <thead>
+                <tr>
+                    <td><input type="text" id="identificacion" placeholder="Identificación" required></td>
+                    <td><input type="text" id="nombres" placeholder="Nombres" required></td>
+                    <td><input type="text" id="apellidos" placeholder="Apellidos" required></td>
+                    <td><input type="email" id="email" placeholder="Email" required></td>
+                    <td><input type="text" id="telefono" placeholder="Teléfono" required></td>
+                    <td><input type="text" id="cargo" placeholder="Cargo" required></td>
+                    <td><input type="button" id="save" value="Guardar"></td>
+                </tr>
+            </thead>
+        </table>
+    </form>
+
+    <div id="list">
+        <table border="1" id="tblAdminList">
+            <thead>
+                <tr>
+                    <th>Identificación</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Cargo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Importamos el script del componente -->
+    <script type="module" src="../components/administrativos.js" defer></script>
+</section>
