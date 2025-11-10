@@ -1,1 +1,25 @@
-<h2>Página de Cursos</h2>
+<section data-page-root>
+    <h2>Gestión de Cursos</h2>
+    <form id="frmCurso" class="card grid grid-3">
+        <input id="codigo" placeholder="Código" required>
+        <input id="nombre" placeholder="Nombre" required>
+        <input id="docente" placeholder="Docente a cargo (código o email)" required>
+        <textarea id="descripcion" placeholder="Descripción"></textarea>
+        <input id="duracion" placeholder="Duración (horas)">
+        <input id="etiquetas" placeholder="Etiquetas (coma)">
+        <select id="visibilidad">
+        <option value="publico">Público</option>
+        <option value="privado">Privado</option>
+        </select>
+        <button id="save" class="btn" type="button">Guardar</button>
+    </form>
+
+    <div class="card">
+        <table>
+            <thead><tr>
+                <th>Código</th><th>Nombre</th><th>Docente</th><th>Duración</th><th>Visibilidad</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="dataTable"></tbody>
+        </table>
+    </div>
+</section>
