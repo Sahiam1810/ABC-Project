@@ -22,6 +22,21 @@
     <div id="userbox"></div>
   </header>
   <main id="app" class="container"></main>
+  <!-- Modal de login (oculto por defecto) -->
+  <div id="loginOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModal" aria-label="Cerrar">✕</button>
+      <h2 id="modalTitle">Iniciar sesión</h2>
+      <form id="modalLoginForm" class="grid">
+        <input type="email" id="modalEmail" placeholder="Correo" required />
+        <input type="password" id="modalPassword" placeholder="Contraseña" required />
+        <div style="display:flex;gap:8px">
+          <button class="btn" type="submit">Entrar</button>
+          <button class="btn secondary" type="button" id="cancelLogin">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <footer class="footer">© 2025 LMS ABC</footer>
   <script type="module">
     import { loadPage } from "./src/js/routes.js";
@@ -32,9 +47,50 @@
       if(u){
         box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
       }else{
-        box.innerHTML = `<a class="btn secondary" href="./src/pages/login.html">Ingresar</a>`;
+        // Usamos un botón que abre el modal en lugar de navegar a la página de login
+        box.innerHTML = `<a class="btn secondary" href="#" id="openLoginBtn">Ingresar</a>`;
       }
       loadPage('dashboard');
+    });
+  </script>
+  <script>
+    // Control del modal de login: apertura, cierre y envío
+    document.addEventListener('click', async (e) => {
+      // Abrir modal
+      const open = e.target.closest && e.target.closest('#openLoginBtn');
+      if (open) {
+        e.preventDefault();
+        const overlay = document.getElementById('loginOverlay');
+        overlay.setAttribute('aria-hidden', 'false');
+        setTimeout(() => document.getElementById('modalEmail').focus(), 50);
+        return;
+      }
+
+      // Cerrar por botón o clic fuera
+      if (e.target.id === 'closeModal' || e.target.id === 'cancelLogin') {
+        document.getElementById('loginOverlay').setAttribute('aria-hidden', 'true');
+      }
+      if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+        e.target.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    // Envío del formulario del modal usando auth.login dinámico
+    document.getElementById('modalLoginForm').addEventListener('submit', async (evt) => {
+      evt.preventDefault();
+      const email = document.getElementById('modalEmail').value.trim();
+      const password = document.getElementById('modalPassword').value.trim();
+      const auth = await import('./src/js/auth.js');
+      const ok = auth.login(email, password);
+      if (ok) {
+        // Actualizar userbox sin recargar
+        const box = document.getElementById('userbox');
+        const u = auth.currentUser();
+        box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
+        document.getElementById('loginOverlay').setAttribute('aria-hidden', 'true');
+      } else {
+        alert('Credenciales incorrectas');
+      }
     });
   </script>
 </body>

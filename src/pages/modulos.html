@@ -1,0 +1,18 @@
+<section data-page-root>
+    <h2>Gestión de Módulos</h2>
+    <form id="frmModulo" class="card grid grid-3">
+        <input id="codigo" placeholder="Código del módulo" required>
+        <select id="cursoCodigo"></select>
+        <input id="nombre" placeholder="Nombre del módulo" required>
+        <textarea id="descripcion" placeholder="Descripción"></textarea>
+        <button id="save" class="btn" type="button">Guardar</button>
+    </form>
+    <div class="card">
+        <table>
+            <thead><tr>
+                <th>Código</th><th>Curso</th><th>Nombre</th><th>Descripción</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="dataTable"></tbody>
+        </table>
+    </div>
+</section>
