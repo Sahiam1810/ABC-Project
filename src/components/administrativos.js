@@ -1,117 +1,95 @@
 import { read, write } from "../js/storage.js";
-
+import { isAdmin } from "../js/auth.js";
 const DB = "administrativos";
-let editIndex = -1; // -1 significa modo creación
+export function init(root){
+    const form = root.querySelector("#frmAdmin");
+    const saveBtn = root.querySelector("#save");
+    const table = root.querySelector("#dataTable");
+    let editIndex = -1;
 
-// Ejecutar cuando el DOM esté listo
-window.addEventListener('DOMContentLoaded', () => {
-    const btnSave = document.querySelector('#save');
-    const dataTable = document.querySelector('#dataTable');
+    if(!isAdmin()){
+        const banner = document.createElement("div");
+        banner.className = "card";
+        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
+        root.prepend(banner);
+        form?.querySelectorAll("input,textarea,select,button").forEach(el=>{ if(el.type !== "button") el.disabled = true; });
+    }
 
-    if (!btnSave) return; // si el formulario no está en esta página
+    render();
 
-    // Cargar lista inicial
-    loadData();
-
-    // Delegación de eventos para editar/eliminar en la tabla
-    dataTable.addEventListener('click', (e) => {
-        const target = e.target;
-        const idx = target.closest('[data-index]')?.dataset.index;
-
-        // Eliminar
-        if (target.classList.contains('btn-delete')) {
-            e.preventDefault();
-            const index = Number(idx);
-            if (Number.isNaN(index)) return;
-            const items = read(DB) || [];
-            items.splice(index, 1);
-            write(DB, items);
-            loadData();
+    saveBtn.addEventListener("click", ()=>{
+        if(!isAdmin()) return;
+        const administrativo = {
+            identificacion: root.querySelector("#identificacion").value.trim(),
+            nombres: root.querySelector("#nombres").value.trim(),
+            apellidos: root.querySelector("#apellidos").value.trim(),
+            email: root.querySelector("#email").value.trim(),
+            password: root.querySelector("#password").value.trim(),
+            telefono: root.querySelector("#telefono").  value.trim(),
+            cargo: root.querySelector("#cargo").value.trim()
+        };
+        if(!administrativo.identificacion || !administrativo.nombres || !administrativo.apellidos || !administrativo.email || !administrativo.password){
+            alert("Completa los campos obligatorios");
             return;
         }
-
-        // Editar
-        if (target.classList.contains('btn-edit')) {
-            e.preventDefault();
-            const index = Number(idx);
-            const items = read(DB) || [];
-            const item = items[index];
-            if (!item) return;
-            // Llenar formulario con los datos
-            document.getElementById('identificacion').value = item.identificacion || '';
-            document.getElementById('nombres').value = item.nombres || '';
-            document.getElementById('apellidos').value = item.apellidos || '';
-            document.getElementById('email').value = item.email || '';
-            document.getElementById('telefono').value = item.telefono || '';
-            document.getElementById('cargo').value = item.cargo || '';
-            editIndex = index;
-            btnSave.value = 'Actualizar';
-            return;
-        }
-    });
-
-    // Guardar o actualizar
-    btnSave.addEventListener('click', (event) => {
-        event.preventDefault();
-
-        const identificacion = document.getElementById('identificacion')?.value?.trim() || '';
-        const nombres = document.getElementById('nombres')?.value?.trim() || '';
-        const apellidos = document.getElementById('apellidos')?.value?.trim() || '';
-        const email = document.getElementById('email')?.value?.trim() || '';
-        const telefono = document.getElementById('telefono')?.value?.trim() || '';
-        const cargo = document.getElementById('cargo')?.value?.trim() || '';
-
-        // Validación mínima
-        if (!identificacion || !nombres) {
-            alert('Por favor complete al menos identificación y nombres.');
-            return;
-        }
-
-        const items = read(DB) || [];
-
-        if (editIndex >= 0) {
-            // Actualizar registro existente
-            items[editIndex] = { identificacion, nombres, apellidos, email, telefono, cargo };
-            write(DB, items);
-            alert('✅ Administrativo actualizado correctamente.');
+        const data = read(DB);
+        if(editIndex === -1){
+            data.push(administrativo);
+        }else{
+            data[editIndex] = administrativo;
             editIndex = -1;
-            btnSave.value = 'Guardar';
-        } else {
-            // Nuevo registro
-            items.push({ identificacion, nombres, apellidos, email, telefono, cargo });
-            write(DB, items);
-            alert('✅ Administrativo guardado correctamente.');
+            saveBtn.textContent = "Guardar";
         }
-
-        // Reset formulario y recargar tabla
-        const form = document.querySelector('form');
-        if (form) form.reset();
-        loadData();
+        write(DB, data);
+        form.reset();
+        render();
     });
-});
 
-// Función para recargar datos en la tabla
-function loadData() {
-    const data = read(DB) || [];
-    const dataTable = document.querySelector('#dataTable');
-    if (!dataTable) return;
-
-    dataTable.innerHTML = data.map((admin, i) => {
-        return `
-            <tr data-index="${i}">
-                <td>${admin.identificacion || ''}</td>
-                <td>${admin.nombres || ''}</td>
-                <td>${admin.apellidos || ''}</td>
-                <td>${admin.email || ''}</td>
-                <td>${admin.telefono || ''}</td>
-                <td>${admin.cargo || ''}</td>
+    function render(){
+        const data = read(DB);
+        table.innerHTML = data.map((a,i)=>`
+            <tr>
+                <td>${a.identificacion}</td>
+                <td>${a.nombres}</td>
+                <td>${a.apellidos}</td>
+                <td>${a.email}</td>
+                <td>${a.telefono||""}</td>
+                <td>${a.cargo||""}</td>
                 <td>
-                    <button class="btn-edit">Editar</button>
-                    <button class="btn-delete">Eliminar</button>
+                    ${isAdmin()?`<button class="btn" data-edit="${i}">Editar</button>
+                    <button class="btn danger" data-del="${i}">Eliminar</button>`:""}
                 </td>
             </tr>
-        `;
-    }).join('');
+        `).join("");
+
+        if(!isAdmin()) return;
+
+        table.querySelectorAll("button[data-edit]").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                const i = +e.currentTarget.dataset.edit;
+                const a = read(DB)[i];
+                root.querySelector("#identificacion").value = a.identificacion;
+                root.querySelector("#nombres").value = a.nombres;
+                root.querySelector("#apellidos").value = a.apellidos;
+                root.querySelector("#email").value = a.email;
+                root.querySelector("#password").value = a.password;
+                root.querySelector("#telefono").value = a.telefono||"";
+                root.querySelector("#cargo").value = a.cargo||"";
+                editIndex = i;
+                saveBtn.textContent = "Actualizar";
+            });
+        });
+
+        table.querySelectorAll("button[data-del]").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                const i = +e.currentTarget.dataset.del;
+                const data = read(DB);
+                data.splice(i,1);
+                write(DB, data);
+                render();
+            });
+        });
+    }
 }
 
 
