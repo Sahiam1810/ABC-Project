@@ -1,0 +1,23 @@
+<section data-page-root>
+    <h2>Dashboard</h2>
+    <div class="grid grid-3">
+        <div class="card">
+            <h3>Cursos activos</h3>
+            <div id="metric-cursos" class="badge">0</div>
+        </div>
+        <div class="card">
+            <h3>Docentes</h3>
+            <div id="metric-docentes" class="badge">0</div>
+        </div>
+        <div class="card">
+            <h3>Administrativos</h3>
+            <div id="metric-admins" class="badge">0</div>
+        </div>
+    </div>
+    <div class="card">
+        <h3>Accesos rápidos</h3>
+        <button class="btn" onclick="loadPage('cursos')">Crear curso</button>
+        <button class="btn secondary" onclick="loadPage('docentes')">Gestionar docentes</button>
+        <button class="btn secondary" onclick="loadPage('administrativos')">Gestionar administrativos</button>
+    </div>
+</section>
