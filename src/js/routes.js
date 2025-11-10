@@ -10,7 +10,8 @@ const PAGE_MODULES = {
   explorar: () => import("../components/explorar.js"),
 };
 
-const PROTECTED = new Set(["docentes","cursos","modulos","lecciones","administrativos"]);
+// Only the administrativos section requires an admin session to access the CRUD.
+const PROTECTED = new Set(["administrativos"]);
 
 export async function loadPage(page){
   const container = document.getElementById("app");

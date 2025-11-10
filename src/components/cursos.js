@@ -35,7 +35,11 @@ export function init(root){
         banner.className = "card";
         banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
         root.prepend(banner);
-        form?.querySelectorAll("input,textarea,select,button").forEach(el=>{ if(el.type !== "button") el.disabled = true; });
+        // Ocultar formulario y tabla para usuarios públicos
+        if(form) form.style.display = 'none';
+        filterBar.style.display = 'none';
+        const tableParent = table?.closest('.card');
+        if(tableParent) tableParent.style.display = 'none';
     }
 
     function getFilters(){
@@ -46,31 +50,72 @@ export function init(root){
     }
 
     filterBar.querySelector("#apply").addEventListener("click", render);
-    render();
+    
+    if(!isAdmin()){
+        renderPublicView(root);
+    } else {
+        render();
+    }
 
     saveBtn.addEventListener("click", ()=>{
         if(!isAdmin()) return;
-        const curso = {
-            codigo: root.querySelector("#codigo").value.trim(),
-            nombre: root.querySelector("#nombre").value.trim(),
-            descripcion: root.querySelector("#descripcion").value.trim(),
-            docente: root.querySelector("#docente").value.trim(),
-            duracion: root.querySelector("#duracion").value.trim(),
-            etiquetas: root.querySelector("#etiquetas").value.trim(),
-            visibilidad: root.querySelector("#visibilidad").value,
-            createdAt: new Date().toISOString()
-        };
-        if(!curso.codigo || !curso.nombre || !curso.docente){
-            alert("Código, Nombre y Docente son obligatorios");
-            return;
-        }
+        const imagenInput = root.querySelector("#imagen");
+        const imagenFile = imagenInput?.files?.[0];
+        
+        if(imagenFile){
+            const reader = new FileReader();
+            reader.onload = (e)=>{
+                const curso = {
+                    codigo: root.querySelector("#codigo").value.trim(),
+                    nombre: root.querySelector("#nombre").value.trim(),
+                    descripcion: root.querySelector("#descripcion").value.trim(),
+                    docente: root.querySelector("#docente").value.trim(),
+                    duracion: root.querySelector("#duracion").value.trim(),
+                    etiquetas: root.querySelector("#etiquetas").value.trim(),
+                    imagen: e.target.result,
+                    visibilidad: root.querySelector("#visibilidad").value,
+                    createdAt: new Date().toISOString()
+                };
+                if(!curso.codigo || !curso.nombre || !curso.docente){
+                    alert("Código, Nombre y Docente son obligatorios");
+                    return;
+                }
 
-        const docentes = read("docentes");
-        const existeDocente = docentes.some(d => d.codigo === curso.docente || d.email === curso.docente);
-        if(!existeDocente){
-            if(!confirm("El docente no existe. ¿Deseas guardar de todas formas?")) return;
-        }
+                const docentes = read("docentes");
+                const existeDocente = docentes.some(d => d.codigo === curso.docente || d.email === curso.docente);
+                if(!existeDocente){
+                    if(!confirm("El docente no existe. ¿Deseas guardar de todas formas?")) return;
+                }
+                saveCurso(curso);
+            };
+            reader.readAsDataURL(imagenFile);
+        } else {
+            const curso = {
+                codigo: root.querySelector("#codigo").value.trim(),
+                nombre: root.querySelector("#nombre").value.trim(),
+                descripcion: root.querySelector("#descripcion").value.trim(),
+                docente: root.querySelector("#docente").value.trim(),
+                duracion: root.querySelector("#duracion").value.trim(),
+                etiquetas: root.querySelector("#etiquetas").value.trim(),
+                imagen: "",
+                visibilidad: root.querySelector("#visibilidad").value,
+                createdAt: new Date().toISOString()
+            };
+            if(!curso.codigo || !curso.nombre || !curso.docente){
+                alert("Código, Nombre y Docente son obligatorios");
+                return;
+            }
 
+            const docentes = read("docentes");
+            const existeDocente = docentes.some(d => d.codigo === curso.docente || d.email === curso.docente);
+            if(!existeDocente){
+                if(!confirm("El docente no existe. ¿Deseas guardar de todas formas?")) return;
+            }
+            saveCurso(curso);
+        }
+    });
+
+    function saveCurso(curso){
         const data = read(DB);
         if(editIndex === -1){
             data.push(curso);
@@ -82,7 +127,7 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
-    });
+    }
 
     function render(){
         const data = read(DB);
@@ -100,6 +145,7 @@ export function init(root){
                 <td>${c.nombre}</td>
                 <td>${c.docente}</td>
                 <td>${c.duracion||"-"}</td>
+                <td>${c.imagen ? `<img src="${c.imagen}" width="40" />` : ""}</td>
                 <td><span class="badge">${c.visibilidad}</span></td>
                 <td>
                     ${isAdmin()?`
@@ -147,5 +193,26 @@ export function init(root){
                 render();
             });
         });
+    }
+}
+
+function renderPublicView(root){
+    const data = read(DB);
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    grid.innerHTML = data.map(c=>`
+        <div class="card-item">
+            <img src="${c.imagen || 'https://via.placeholder.com/400x140?text=' + c.nombre}" alt="${c.nombre}"/>
+            <div class="card-item-body">
+                <h4>${c.nombre}</h4>
+                <p class="meta"><strong>Docente:</strong> ${c.docente||'-'}</p>
+                <p class="meta">${(c.descripcion||'').slice(0,80)}${(c.descripcion||'').length>80?'...':''}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    const section = root.querySelector('section[data-page-root]');
+    if(section){
+        section.appendChild(grid);
     }
 }

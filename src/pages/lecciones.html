@@ -5,13 +5,13 @@
         <input id="intensidad" placeholder="Intensidad horaria (horas)" required>
         <select id="moduloCodigo"></select>
         <textarea id="contenido" placeholder="Contenido (texto)"></textarea>
-        <input id="multimedia" placeholder="Multimedia (URLs separadas por coma)">
+        <input id="multimedia" type="file" accept="image/png,image/jpeg" placeholder="Multimedia (PNG o JPG)">
         <button id="save" class="btn" type="button">Guardar</button>
     </form>
     <div class="card">
         <table>
             <thead><tr>
-                <th>Título</th><th>Intensidad</th><th>Módulo</th><th>Multimedia</th><th>Acciones</th>
+                <th>Título</th><th>Intensidad</th><th>Módulo</th><th>Imagen</th><th>Acciones</th>
             </tr></thead>
             <tbody id="dataTable"></tbody>
         </table>

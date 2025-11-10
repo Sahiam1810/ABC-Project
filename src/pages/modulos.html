@@ -5,12 +5,13 @@
         <select id="cursoCodigo"></select>
         <input id="nombre" placeholder="Nombre del módulo" required>
         <textarea id="descripcion" placeholder="Descripción"></textarea>
+        <input id="imagen" type="file" accept="image/png,image/jpeg" placeholder="Imagen del módulo (PNG o JPG)">
         <button id="save" class="btn" type="button">Guardar</button>
     </form>
     <div class="card">
         <table>
             <thead><tr>
-                <th>Código</th><th>Curso</th><th>Nombre</th><th>Descripción</th><th>Acciones</th>
+                <th>Código</th><th>Curso</th><th>Nombre</th><th>Descripción</th><th>Imagen</th><th>Acciones</th>
             </tr></thead>
             <tbody id="dataTable"></tbody>
         </table>

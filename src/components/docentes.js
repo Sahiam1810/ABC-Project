@@ -8,30 +8,58 @@ export function init(root){
     let editIndex = -1;
 
     if(!isAdmin()){
-        const banner = document.createElement("div");
-        banner.className = "card";
-        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
-        root.prepend(banner);
-        form?.querySelectorAll("input,textarea,select,button").forEach(el=>{ if(el.type !== "button") el.disabled = true; });
-    } 
-
-    render();
+        // Ocultar formulario y tabla para usuarios no-admin
+        if(form) form.style.display = 'none';
+        const tableParent = table?.closest('.card');
+        if(tableParent) tableParent.style.display = 'none';
+        renderPublicView(root);
+    } else {
+        render();
+    }
 
     saveBtn.addEventListener("click", ()=>{
         if(!isAdmin()) return;
-        const docente = {
-            codigo: root.querySelector("#codigo").value.trim(),
-            identificacion: root.querySelector("#identificacion").value.trim(),
-            nombres: root.querySelector("#nombres").value.trim(),
-            apellidos: root.querySelector("#apellidos").value.trim(),
-            email: root.querySelector("#email").value.trim(),
-            area: root.querySelector("#area").value.trim(),
-            foto: root.querySelector("#foto").value.trim()
-        };
-        if(!docente.codigo || !docente.identificacion || !docente.nombres || !docente.apellidos || !docente.email || !docente.area){
-            alert("Completa todos los campos obligatorios");
-            return;
+        const fotoInput = root.querySelector("#foto");
+        const fotoFile = fotoInput?.files?.[0];
+        
+        if(fotoFile){
+            const reader = new FileReader();
+            reader.onload = (e)=>{
+                const docente = {
+                    codigo: root.querySelector("#codigo").value.trim(),
+                    identificacion: root.querySelector("#identificacion").value.trim(),
+                    nombres: root.querySelector("#nombres").value.trim(),
+                    apellidos: root.querySelector("#apellidos").value.trim(),
+                    email: root.querySelector("#email").value.trim(),
+                    area: root.querySelector("#area").value.trim(),
+                    foto: e.target.result
+                };
+                if(!docente.codigo || !docente.identificacion || !docente.nombres || !docente.apellidos || !docente.email || !docente.area){
+                    alert("Completa todos los campos obligatorios");
+                    return;
+                }
+                saveDocente(docente);
+            };
+            reader.readAsDataURL(fotoFile);
+        } else {
+            const docente = {
+                codigo: root.querySelector("#codigo").value.trim(),
+                identificacion: root.querySelector("#identificacion").value.trim(),
+                nombres: root.querySelector("#nombres").value.trim(),
+                apellidos: root.querySelector("#apellidos").value.trim(),
+                email: root.querySelector("#email").value.trim(),
+                area: root.querySelector("#area").value.trim(),
+                foto: ""
+            };
+            if(!docente.codigo || !docente.identificacion || !docente.nombres || !docente.apellidos || !docente.email || !docente.area){
+                alert("Completa todos los campos obligatorios");
+                return;
+            }
+            saveDocente(docente);
         }
+    });
+
+    function saveDocente(docente){
         const data = read(DB);
         if(editIndex === -1){
             data.push(docente);
@@ -43,7 +71,7 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
-    });
+    }
 
     function render(){
         const data = read(DB);
@@ -96,5 +124,26 @@ export function init(root){
                 render();
             });
         });
+    }
+}
+
+function renderPublicView(root){
+    const data = read(DB);
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    grid.innerHTML = data.map(d=>`
+        <div class="card-item">
+            ${d.foto ? `<img src="${d.foto}" alt="${d.nombres} ${d.apellidos}"/>` : `<img src="https://via.placeholder.com/400x140?text=Docente"/>`}
+            <div class="card-item-body">
+                <h4>${d.nombres} ${d.apellidos}</h4>
+                <p class="meta"><strong>Área:</strong> ${d.area||'-'}</p>
+                <p class="meta"><strong>Email:</strong> ${d.email||'-'}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    const section = root.querySelector('section[data-page-root]');
+    if(section){
+        section.appendChild(grid);
     }
 }

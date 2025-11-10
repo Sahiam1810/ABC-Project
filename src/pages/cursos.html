@@ -7,6 +7,7 @@
         <textarea id="descripcion" placeholder="Descripción"></textarea>
         <input id="duracion" placeholder="Duración (horas)">
         <input id="etiquetas" placeholder="Etiquetas (coma)">
+        <input id="imagen" type="file" accept="image/png,image/jpeg" placeholder="Imagen del curso (PNG o JPG)">
         <select id="visibilidad">
         <option value="publico">Público</option>
         <option value="privado">Privado</option>
@@ -17,7 +18,7 @@
     <div class="card">
         <table>
             <thead><tr>
-                <th>Código</th><th>Nombre</th><th>Docente</th><th>Duración</th><th>Visibilidad</th><th>Acciones</th>
+                <th>Código</th><th>Nombre</th><th>Docente</th><th>Duración</th><th>Imagen</th><th>Visibilidad</th><th>Acciones</th>
             </tr></thead>
             <tbody id="dataTable"></tbody>
         </table>

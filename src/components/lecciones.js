@@ -19,26 +19,61 @@ export function init(root){
         banner.className = "card";
         banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
         root.prepend(banner);
-        form?.querySelectorAll("input,textarea,select,button").forEach(el=>{ if(el.type !== "button") el.disabled = true; });
+        // Ocultar formulario y tabla para usuarios públicos
+        if(form) form.style.display = 'none';
+        const tableParent = table?.closest('.card');
+        if(tableParent) tableParent.style.display = 'none';
     }
 
     loadModulos();
-    render();
+    
+    if(!isAdmin()){
+        renderPublicView(root);
+    } else {
+        render();
+    }
 
     saveBtn.addEventListener("click", ()=>{
         if(!isAdmin()) return;
-        const leccion = {
-            id: cryptoRandom(),
-            titulo: root.querySelector("#titulo").value.trim(),
-            intensidad: root.querySelector("#intensidad").value.trim(),
-            moduloCodigo: ddlModulo.value,
-            contenido: root.querySelector("#contenido").value.trim(),
-            multimedia: root.querySelector("#multimedia").value.trim()
-        };
-        if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
-            alert("Título, Intensidad y Módulo son obligatorios");
-            return;
+        const multimediaInput = root.querySelector("#multimedia");
+        const multimediaFile = multimediaInput?.files?.[0];
+        
+        if(multimediaFile){
+            const reader = new FileReader();
+            reader.onload = (e)=>{
+                const leccion = {
+                    id: cryptoRandom(),
+                    titulo: root.querySelector("#titulo").value.trim(),
+                    intensidad: root.querySelector("#intensidad").value.trim(),
+                    moduloCodigo: ddlModulo.value,
+                    contenido: root.querySelector("#contenido").value.trim(),
+                    multimedia: e.target.result
+                };
+                if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
+                    alert("Título, Intensidad y Módulo son obligatorios");
+                    return;
+                }
+                saveLeccion(leccion);
+            };
+            reader.readAsDataURL(multimediaFile);
+        } else {
+            const leccion = {
+                id: cryptoRandom(),
+                titulo: root.querySelector("#titulo").value.trim(),
+                intensidad: root.querySelector("#intensidad").value.trim(),
+                moduloCodigo: ddlModulo.value,
+                contenido: root.querySelector("#contenido").value.trim(),
+                multimedia: ""
+            };
+            if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
+                alert("Título, Intensidad y Módulo son obligatorios");
+                return;
+            }
+            saveLeccion(leccion);
         }
+    });
+
+    function saveLeccion(leccion){
         const data = read(DB);
         if(editIndex === -1){
             data.push(leccion);
@@ -51,7 +86,7 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
-    });
+    }
 
     function render(){
         const data = read(DB);
@@ -60,7 +95,7 @@ export function init(root){
                 <td>${l.titulo}</td>
                 <td>${l.intensidad}</td>
                 <td>${l.moduloCodigo}</td>
-                <td>${l.multimedia||""}</td>
+                <td>${l.multimedia ? `<img src="${l.multimedia}" width="40" />` : ""}</td>
                 <td>
                     ${isAdmin()?`<button class="btn" data-edit="${i}">Editar</button>
                     <button class="btn danger" data-del="${i}">Eliminar</button>`:""}
@@ -78,7 +113,6 @@ export function init(root){
                 root.querySelector("#intensidad").value = l.intensidad;
                 ddlModulo.value = l.moduloCodigo;
                 root.querySelector("#contenido").value = l.contenido||"";
-                root.querySelector("#multimedia").value = l.multimedia||"";
                 editIndex = i;
                 saveBtn.textContent = "Actualizar";
             });
@@ -97,5 +131,26 @@ export function init(root){
 
     function cryptoRandom(){
         try{ return crypto.randomUUID(); }catch{ return 'L'+Math.random().toString(36).slice(2); }
+    }
+}
+
+function renderPublicView(root){
+    const data = read(DB);
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    grid.innerHTML = data.map(l=>`
+        <div class="card-item">
+            <img src="${l.multimedia || 'https://via.placeholder.com/400x140?text=' + l.titulo}" alt="${l.titulo}"/>
+            <div class="card-item-body">
+                <h4>${l.titulo}</h4>
+                <p class="meta"><strong>Intensidad:</strong> ${l.intensidad||'-'}</p>
+                <p class="meta"><strong>Módulo:</strong> ${l.moduloCodigo||'-'}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    const section = root.querySelector('section[data-page-root]');
+    if(section){
+        section.appendChild(grid);
     }
 }
