@@ -1,1 +1,22 @@
-<h2>Página de Docentes</h2>
+<section data-page-root>
+    <h2>Gestión de Docentes</h2>
+    <form id="frmDocente" class="card grid grid-3">
+        <input id="codigo" placeholder="Código" required>
+        <input id="identificacion" placeholder="Identificación" required>
+        <input id="nombres" placeholder="Nombres" required>
+        <input id="apellidos" placeholder="Apellidos" required>
+        <input id="email" type="email" placeholder="Email" required>
+        <input id="area" placeholder="Área Académica" required>
+        <input id="foto" placeholder="URL Foto (opcional)">
+        <button id="save" class="btn" type="button">Guardar</button>
+    </form>
+
+    <div class="card">
+        <table>
+            <thead><tr>
+                <th>Código</th><th>Identificación</th><th>Nombre</th><th>Email</th><th>Área</th><th>Foto</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="dataTable"></tbody>
+        </table>
+    </div>
+</section>
