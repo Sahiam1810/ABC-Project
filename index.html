@@ -1,28 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project-ABC</title>
-    <script type="module" src="./src/js/main.js"></script>
-    <link rel="stylesheet" href="./src/css/styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS ABC</title>
+  <link rel="stylesheet" href="./src/css/style.css"/>
+  <script type="module" src="./src/js/routes.js"></script>
 </head>
 <body>
-     <main>
-        <nav>
-            <table>
-                <tr>
-                    <td>
-                        <a href="./src/pages/administrativos.html">Administrativos</a>
-                    </td>
-                </tr>
-            </table>
-        </nav>
-        <article id="greetings">
-            Bienvenidos al Facturador CampusInvoice!
-        </article>
-    </main>
-    
-    
+  <header class="topbar">
+    <h1>LMS ABC</h1>
+    <nav>
+      <a href="#" onclick="loadPage('dashboard')">Dashboard</a>
+      <a href="#" onclick="loadPage('docentes')">Docentes</a>
+      <a href="#" onclick="loadPage('cursos')">Cursos</a>
+      <a href="#" onclick="loadPage('modulos')">Módulos</a>
+      <a href="#" onclick="loadPage('lecciones')">Lecciones</a>
+      <a href="#" onclick="loadPage('administrativos')">Administrativos</a>
+      <a href="#" onclick="loadPage('explorar')">Explorar</a>
+    </nav>
+    <div id="userbox"></div>
+  </header>
+  <main id="app" class="container"></main>
+  <footer class="footer">© 2025 LMS ABC</footer>
+  <script type="module">
+    import { loadPage } from "./src/js/routes.js";
+    import { currentUser } from "./src/js/auth.js";
+    window.addEventListener("DOMContentLoaded", ()=> {
+      const box = document.getElementById("userbox");
+      const u = currentUser();
+      if(u){
+        box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
+      }else{
+        box.innerHTML = `<a class="btn secondary" href="./src/pages/login.html">Ingresar</a>`;
+      }
+      loadPage('dashboard');
+    });
+  </script>
 </body>
 </html>
