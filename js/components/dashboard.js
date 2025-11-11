@@ -1,4 +1,4 @@
-import { read } from "../js/storage.js";
+import { read } from "../storage.js";
 export function init(root){
     const cursos = read("cursos").filter(c=>c.visibilidad==='publico');
     const docentes = read("docentes");

@@ -1,5 +1,5 @@
-import { read, write } from "../js/storage.js";
-import { isAdmin } from "../js/auth.js";
+import { read, write } from "../storage.js";
+import { isAdmin } from "../auth.js";
 const DB = "modulos";
 export function init(root){
     const form = root.querySelector("#frmModulo");

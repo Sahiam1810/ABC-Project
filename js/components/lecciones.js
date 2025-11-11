@@ -1,5 +1,5 @@
-import { read, write } from "../js/storage.js";
-import { isAdmin } from "../js/auth.js";
+import { read, write } from "../storage.js";
+import { isAdmin } from "../auth.js";
 const DB = "lecciones";
 export function init(root){
     const form = root.querySelector("#frmLeccion");
@@ -259,7 +259,7 @@ function renderPublicView(root){
                 
                 setTimeout(async ()=>{
                     try{
-                        const auth = await import('../js/auth.js');
+                        const auth = await import('../auth.js');
                         if(!auth.isAdmin()) return;
                     }catch(e){  }
 

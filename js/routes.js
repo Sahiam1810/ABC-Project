@@ -1,13 +1,13 @@
 import { isAdmin } from "./auth.js";
 
 const PAGE_MODULES = {
-  dashboard: () => import("../components/dashboard.js"),
-  docentes: () => import("../components/docentes.js"),
-  cursos: () => import("../components/cursos.js"),
-  administrativos: () => import("../components/administrativos.js"),
-  modulos: () => import("../components/modulos.js"),
-  lecciones: () => import("../components/lecciones.js"),
-  explorar: () => import("../components/explorar.js"),
+  dashboard: () => import("./components/dashboard.js"),
+  docentes: () => import("./components/docentes.js"),
+  cursos: () => import("./components/cursos.js"),
+  administrativos: () => import("./components/administrativos.js"),
+  modulos: () => import("./components/modulos.js"),
+  lecciones: () => import("./components/lecciones.js"),
+  explorar: () => import("./components/explorar.js"),
 };
 
 
