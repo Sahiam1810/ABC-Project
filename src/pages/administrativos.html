@@ -1,6 +1,6 @@
 <section id="admin-section" data-page-root>
     <h2>Gestión de Administrativos</h2>
-    <form id="frmAdmin" class="card grid grid-3">
+    <form id="frmAdmin" class="card grid grid-3" style="display:none;">
         <input type="text" id="identificacion" placeholder="Identificación" required>
         <input type="text" id="nombres" placeholder="Nombres" required>
         <input type="text" id="apellidos" placeholder="Apellidos" required>
@@ -10,6 +10,10 @@
         <input type="text" id="cargo" placeholder="Cargo" required>
         <button class="btn" id="save" type="button">Guardar</button>
     </form>
+
+    <div class="card">
+        <button id="addAdmin" class="btn">Añadir administrativo</button>
+    </div>
 
     <div id="list" class="card">
         <table id="tblAdminList">

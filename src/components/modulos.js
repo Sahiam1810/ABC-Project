@@ -4,6 +4,7 @@ const DB = "modulos";
 export function init(root){
     const form = root.querySelector("#frmModulo");
     const saveBtn = root.querySelector("#save");
+    const addBtn = root.querySelector("#addModulo");
     const table = root.querySelector("#dataTable");
     const ddlCurso = root.querySelector("#cursoCodigo");
     let editIndex = -1;
@@ -15,10 +16,6 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        const banner = document.createElement("div");
-        banner.className = "card";
-        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
-        root.prepend(banner);
         if(form) form.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
@@ -30,6 +27,13 @@ export function init(root){
         renderPublicView(root);
     } else {
         render();
+    }
+
+    if(addBtn){
+        addBtn.addEventListener('click', ()=>{
+            if(!isAdmin()){ alert('Solo administradores pueden crear módulos.'); return; }
+            showFormModal();
+        });
     }
 
     saveBtn.addEventListener("click", async ()=>{
@@ -72,7 +76,36 @@ export function init(root){
         }
         write(DB, data);
         form.reset();
+        hideFormModal();
         render();
+    }
+
+    function showFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','false');
+        backdrop.removeAttribute('inert');
+        form.style.display = 'block';
+        form.classList.add('floating-form');
+        const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
+        backdrop._onClick = onClick;
+        backdrop.addEventListener('click', onClick);
+        const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
+        document.addEventListener('keydown', onKey);
+        backdrop._onKey = onKey;
+        setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
+    }
+
+    function hideFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','true');
+        backdrop.setAttribute('inert','');
+        form.classList.remove('floating-form');
+        form.style.display = 'none';
+        if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
+        if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
+        delete backdrop._onClick; delete backdrop._onKey;
     }
 
     function compressImage(file, maxWidth = 1000, quality = 0.75){
@@ -164,7 +197,7 @@ function renderPublicView(root){
     grid.className = 'cards-grid';
     grid.innerHTML = data.map(m=>`
         <div class="card-item">
-            <img src="${m.imagen || 'https://via.placeholder.com/400x140?text=' + m.nombre}" alt="${m.nombre}"/>
+            ${m.imagen ? `<img src="${m.imagen}" alt="${m.nombre}"/>` : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin imagen</div>`}
             <div class="card-item-body">
                 <h4>${m.nombre}</h4>
                 <p class="meta"><strong>Curso:</strong> ${m.cursoCodigo||'-'}</p>

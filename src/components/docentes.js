@@ -4,6 +4,7 @@ const DB = "docentes";
 export function init(root){
     const form = root.querySelector("#frmDocente");
     const saveBtn = root.querySelector("#save");
+    const addBtn = root.querySelector("#addDocente");
     const table = root.querySelector("#dataTable");
     let editIndex = -1;
 
@@ -15,6 +16,14 @@ export function init(root){
         renderPublicView(root);
     } else {
         render();
+    }
+
+    // Mostrar formulario en modal flotante al hacer click en Añadir
+    if(addBtn){
+        addBtn.addEventListener('click', ()=>{
+            if(!isAdmin()){ alert('Solo administradores pueden crear docentes.'); return; }
+            showFormModal();
+        });
     }
 
     saveBtn.addEventListener("click", ()=>{
@@ -70,7 +79,40 @@ export function init(root){
         }
         write(DB, data);
         form.reset();
+        hideFormModal();
         render();
+    }
+
+    function showFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','false');
+        backdrop.removeAttribute('inert');
+        form.style.display = 'block';
+        form.classList.add('floating-form');
+        // close when clicking backdrop
+        const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
+        backdrop._onClick = onClick;
+        backdrop.addEventListener('click', onClick);
+        // esc to close
+        const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
+        document.addEventListener('keydown', onKey);
+        backdrop._onKey = onKey;
+        // focus first input
+        setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
+    }
+
+    function hideFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','true');
+        backdrop.setAttribute('inert','');
+        form.classList.remove('floating-form');
+        form.style.display = 'none';
+        // remove handlers
+        if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
+        if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
+        delete backdrop._onClick; delete backdrop._onKey;
     }
 
     function render(){
@@ -133,7 +175,7 @@ function renderPublicView(root){
     grid.className = 'cards-grid';
     grid.innerHTML = data.map(d=>`
         <div class="card-item">
-            ${d.foto ? `<img src="${d.foto}" alt="${d.nombres} ${d.apellidos}"/>` : `<img src="https://via.placeholder.com/400x140?text=Docente"/>`}
+            ${d.foto ? `<img src="${d.foto}" alt="${d.nombres} ${d.apellidos}"/>` : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin foto</div>`}
             <div class="card-item-body">
                 <h4>${d.nombres} ${d.apellidos}</h4>
                 <p class="meta"><strong>Área:</strong> ${d.area||'-'}</p>

@@ -5,6 +5,7 @@ export function init(root){
     const form = root.querySelector("#frmLeccion");
     const saveBtn = root.querySelector("#save");
     const table = root.querySelector("#dataTable");
+    const addBtn = root.querySelector("#addLeccion");
     const ddlModulo = root.querySelector("#moduloCodigo");
     let editIndex = -1;
 
@@ -15,10 +16,6 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        const banner = document.createElement("div");
-        banner.className = "card";
-        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
-        root.prepend(banner);
         // Ocultar formulario y tabla para usuarios públicos
         if(form) form.style.display = 'none';
         const tableParent = table?.closest('.card');
@@ -31,6 +28,13 @@ export function init(root){
         renderPublicView(root);
     } else {
         render();
+    }
+
+    if(addBtn){
+        addBtn.addEventListener('click', ()=>{
+            if(!isAdmin()){ alert('Solo administradores pueden crear lecciones.'); return; }
+            showFormModal();
+        });
     }
 
     saveBtn.addEventListener("click", async ()=>{
@@ -75,6 +79,7 @@ export function init(root){
         }
         write(DB, data);
         form.reset();
+        hideFormModal();
         render();
     }
 
@@ -155,6 +160,34 @@ export function init(root){
     function cryptoRandom(){
         try{ return crypto.randomUUID(); }catch{ return 'L'+Math.random().toString(36).slice(2); }
     }
+
+    function showFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','false');
+        backdrop.removeAttribute('inert');
+        form.style.display = 'block';
+        form.classList.add('floating-form');
+        const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
+        backdrop._onClick = onClick;
+        backdrop.addEventListener('click', onClick);
+        const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
+        document.addEventListener('keydown', onKey);
+        backdrop._onKey = onKey;
+        setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
+    }
+
+    function hideFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','true');
+        backdrop.setAttribute('inert','');
+        form.classList.remove('floating-form');
+        form.style.display = 'none';
+        if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
+        if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
+        delete backdrop._onClick; delete backdrop._onKey;
+    }
 }
 
 function renderPublicView(root){
@@ -163,7 +196,7 @@ function renderPublicView(root){
     grid.className = 'cards-grid';
     grid.innerHTML = data.map(l=>`
         <div class="card-item">
-            <img src="${l.multimedia || 'https://via.placeholder.com/400x140?text=' + l.titulo}" alt="${l.titulo}"/>
+            ${l.multimedia ? `<img src="${l.multimedia}" alt="${l.titulo}"/>` : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin multimedia</div>`}
             <div class="card-item-body">
                 <h4>${l.titulo}</h4>
                 <p class="meta"><strong>Intensidad:</strong> ${l.intensidad||'-'}</p>

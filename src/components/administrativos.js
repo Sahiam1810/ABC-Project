@@ -4,6 +4,7 @@ const DB = "administrativos";
 export function init(root){
     const form = root.querySelector("#frmAdmin");
     const saveBtn = root.querySelector("#save");
+    const addBtn = root.querySelector("#addAdmin");
     const table = root.querySelector("#dataTable");
     let editIndex = -1;
 
@@ -15,6 +16,13 @@ export function init(root){
     }
 
     render();
+
+    if(addBtn){
+        addBtn.addEventListener('click', ()=>{
+            if(!isAdmin()){ alert('Solo administradores pueden crear administrativos.'); return; }
+            showFormModal();
+        });
+    }
 
     saveBtn.addEventListener("click", ()=>{
         if(!isAdmin()) return;
@@ -41,8 +49,37 @@ export function init(root){
         }
         write(DB, data);
         form.reset();
+        hideFormModal();
         render();
     });
+
+    function showFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','false');
+        backdrop.removeAttribute('inert');
+        form.style.display = 'block';
+        form.classList.add('floating-form');
+        const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
+        backdrop._onClick = onClick;
+        backdrop.addEventListener('click', onClick);
+        const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
+        document.addEventListener('keydown', onKey);
+        backdrop._onKey = onKey;
+        setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
+    }
+
+    function hideFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','true');
+        backdrop.setAttribute('inert','');
+        form.classList.remove('floating-form');
+        form.style.display = 'none';
+        if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
+        if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
+        delete backdrop._onClick; delete backdrop._onKey;
+    }
 
     function render(){
         const data = read(DB);

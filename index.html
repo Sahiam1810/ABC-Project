@@ -22,7 +22,7 @@
   </header>
   <main id="app" class="container"></main>
   <!-- Modal de login (oculto por defecto) -->
-  <div id="loginOverlay" class="modal-overlay" aria-hidden="true">
+  <div id="loginOverlay" class="modal-overlay" aria-hidden="true" inert>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <button class="modal-close" id="closeModal" aria-label="Cerrar">✕</button>
       <h2 id="modalTitle">Iniciar sesión</h2>
@@ -36,6 +36,8 @@
       </form>
     </div>
   </div>
+  <!-- Backdrop para formularios flotantes -->
+  <div id="formBackdrop" class="modal-overlay" aria-hidden="true" inert></div>
   <footer class="footer">© 2025 LMS ABC</footer>
   <script type="module">
     import { loadPage } from "./src/js/routes.js";
@@ -70,16 +72,20 @@
         e.preventDefault();
         const overlay = document.getElementById('loginOverlay');
         overlay.setAttribute('aria-hidden', 'false');
+        overlay.removeAttribute('inert');
         setTimeout(() => document.getElementById('modalEmail').focus(), 50);
         return;
       }
 
       // Cerrar por botón o clic fuera
       if (e.target.id === 'closeModal' || e.target.id === 'cancelLogin') {
-        document.getElementById('loginOverlay').setAttribute('aria-hidden', 'true');
+        const overlay = document.getElementById('loginOverlay');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.setAttribute('inert', '');
       }
       if (e.target.classList && e.target.classList.contains('modal-overlay')) {
         e.target.setAttribute('aria-hidden', 'true');
+        e.target.setAttribute('inert', '');
       }
     });
 
@@ -100,7 +106,9 @@
         if(auth.isAdmin()){
           adminLink.style.display = "inline-block";
         }
-        document.getElementById('loginOverlay').setAttribute('aria-hidden', 'true');
+        const overlay = document.getElementById('loginOverlay');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.setAttribute('inert', '');
       } else {
         alert('Credenciales incorrectas');
       }

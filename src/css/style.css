@@ -45,10 +45,13 @@ body{
     grid-template-columns:repeat(2,1fr)
 }
 .grid-3{
+    grid-template-columns:repeat(1,1fr)
+}
+.grid-4{
     grid-template-columns:repeat(3,1fr)
 }
 .btn{
-    background:#2d78d3;
+    background:#c26ffa;
     color:#ffffff;
     border:0;
     border-radius:8px;
@@ -183,6 +186,20 @@ input#search{
     width:100%;
     padding:6px 8px;
     font-size:12px
+}
+
+/* Floating form used by admin add/edit flows */
+.floating-form{
+    position:fixed;
+    z-index:1251;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    max-width:760px;
+    width:100%;
+    padding:18px;
+    box-shadow:0 12px 40px rgba(2,6,23,0.45);
+    border-radius:12px;
 }
 
 

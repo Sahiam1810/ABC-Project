@@ -5,6 +5,7 @@ const DB = "cursos";
 export function init(root){
     const form = root.querySelector("#frmCurso");
     const saveBtn = root.querySelector("#save");
+    const addBtn = root.querySelector("#addCurso");
     const table = root.querySelector("#dataTable");
     let editIndex = -1;
 
@@ -31,10 +32,6 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        const banner = document.createElement("div");
-        banner.className = "card";
-        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
-        root.prepend(banner);
         // Ocultar formulario y tabla para usuarios públicos
         if(form) form.style.display = 'none';
         filterBar.style.display = 'none';
@@ -55,6 +52,13 @@ export function init(root){
         renderPublicView(root);
     } else {
         render();
+    }
+
+    if(addBtn){
+        addBtn.addEventListener('click', ()=>{
+            if(!isAdmin()){ alert('Solo administradores pueden crear cursos.'); return; }
+            showFormModal();
+        });
     }
 
     saveBtn.addEventListener("click", async ()=>{
@@ -108,6 +112,7 @@ export function init(root){
         }
         write(DB, data);
         form.reset();
+        hideFormModal();
         render();
     }
 
@@ -210,6 +215,34 @@ export function init(root){
             });
         });
     }
+
+    function showFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','false');
+        backdrop.removeAttribute('inert');
+        form.style.display = 'block';
+        form.classList.add('floating-form');
+        const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
+        backdrop._onClick = onClick;
+        backdrop.addEventListener('click', onClick);
+        const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
+        document.addEventListener('keydown', onKey);
+        backdrop._onKey = onKey;
+        setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
+    }
+
+    function hideFormModal(){
+        const backdrop = document.getElementById('formBackdrop');
+        if(!backdrop) return;
+        backdrop.setAttribute('aria-hidden','true');
+        backdrop.setAttribute('inert','');
+        form.classList.remove('floating-form');
+        form.style.display = 'none';
+        if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
+        if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
+        delete backdrop._onClick; delete backdrop._onKey;
+    }
 }
 
 function renderPublicView(root){
@@ -218,7 +251,7 @@ function renderPublicView(root){
     grid.className = 'cards-grid';
     grid.innerHTML = data.map(c=>`
         <div class="card-item">
-            <img src="${c.imagen || 'https://via.placeholder.com/400x140?text=' + c.nombre}" alt="${c.nombre}"/>
+            ${c.imagen ? `<img src="${c.imagen}" alt="${c.nombre}"/>` : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin imagen</div>`}
             <div class="card-item-body">
                 <h4>${c.nombre}</h4>
                 <p class="meta"><strong>Docente:</strong> ${c.docente||'-'}</p>
