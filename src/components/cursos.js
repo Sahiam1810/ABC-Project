@@ -32,7 +32,7 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        // Ocultar formulario, tabla, filtros y botón Añadir para usuarios públicos
+        
         if(form) form.style.display = 'none';
         if(addBtn) addBtn.style.display = 'none';
         filterBar.style.display = 'none';
@@ -70,7 +70,7 @@ export function init(root){
         try{
             let imagenData = "";
             if(imagenFile){
-                // compress image to reduce size before storing
+                
                 imagenData = await compressImage(imagenFile, 1000, 0.75);
             }
 
@@ -117,7 +117,7 @@ export function init(root){
         render();
     }
 
-    // Compress an image file and return a DataURL. Reduces dimensions and quality to avoid exceeding localStorage.
+    
     function compressImage(file, maxWidth = 1000, quality = 0.75){
         return new Promise((resolve, reject)=>{
             const reader = new FileReader();
@@ -261,7 +261,7 @@ function renderPublicView(root){
         </div>
     `).join('');
 
-    // Attach click handlers to open detail overlay with full course info
+    
     setTimeout(()=>{
         const items = grid.querySelectorAll('.card-item');
         items.forEach((el, idx)=>{

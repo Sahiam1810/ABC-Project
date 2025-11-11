@@ -9,7 +9,7 @@ export function init(root){
     let editIndex = -1;
 
     if(!isAdmin()){
-        // Ocultar formulario, tabla y botón Añadir para usuarios no-admin
+        
         if(form) form.style.display = 'none';
         if(addBtn) addBtn.style.display = 'none';
         const tableParent = table?.closest('.card');
@@ -19,7 +19,7 @@ export function init(root){
         render();
     }
 
-    // Mostrar formulario en modal flotante al hacer click en Añadir
+    
     if(addBtn){
         addBtn.addEventListener('click', ()=>{
             if(!isAdmin()){ alert('Solo administradores pueden crear docentes.'); return; }
@@ -91,15 +91,15 @@ export function init(root){
         backdrop.removeAttribute('inert');
         form.style.display = 'block';
         form.classList.add('floating-form');
-        // close when clicking backdrop
+        
         const onClick = (e)=>{ if(e.target === backdrop){ hideFormModal(); } };
         backdrop._onClick = onClick;
         backdrop.addEventListener('click', onClick);
-        // esc to close
+        
         const onKey = (e)=>{ if(e.key==='Escape') hideFormModal(); };
         document.addEventListener('keydown', onKey);
         backdrop._onKey = onKey;
-        // focus first input
+        
         setTimeout(()=>{ const first = form.querySelector('input,select,textarea'); first && first.focus(); },50);
     }
 
@@ -110,7 +110,7 @@ export function init(root){
         backdrop.setAttribute('inert','');
         form.classList.remove('floating-form');
         form.style.display = 'none';
-        // remove handlers
+        
         if(backdrop._onClick) backdrop.removeEventListener('click', backdrop._onClick);
         if(backdrop._onKey) document.removeEventListener('keydown', backdrop._onKey);
         delete backdrop._onClick; delete backdrop._onKey;

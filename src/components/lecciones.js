@@ -16,7 +16,6 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        // Ocultar formulario, tabla y botón Añadir para usuarios públicos
         if(form) form.style.display = 'none';
         if(addBtn) addBtn.style.display = 'none';
         const tableParent = table?.closest('.card');
@@ -53,7 +52,7 @@ export function init(root){
 
             let videoData = "";
             if(videoFile){
-                // Limit naive localStorage persistence for videos: only accept small files (<= 1MB) into DataURL
+                
                 const MAX_BYTES = 1024 * 1024; // 1MB
                 if(videoFile.size > MAX_BYTES){
                     if(!confirm('El video es mayor a 1MB y podría no guardarse en el almacenamiento local. ¿Deseas continuar sin guardarlo?')){
@@ -227,7 +226,7 @@ function renderPublicView(root){
         </div>
     `).join('');
 
-    // Hook clicks to open detail overlay and, for admins, provide upload controls inside the detail
+    
     setTimeout(()=>{
         const items = grid.querySelectorAll('.card-item');
         items.forEach((el, idx)=>{
@@ -257,12 +256,12 @@ function renderPublicView(root){
                 `;
                 window.showDetail(html);
 
-                // After overlay content is added, wire preview and save only for admins
+                
                 setTimeout(async ()=>{
                     try{
                         const auth = await import('../js/auth.js');
                         if(!auth.isAdmin()) return;
-                    }catch(e){ /* ignore - if we cannot import, assume not admin */ }
+                    }catch(e){  }
 
                     const detailImagen = document.getElementById('detail_imagen');
                     const previewImagen = document.getElementById('preview_imagen');
@@ -290,7 +289,7 @@ function renderPublicView(root){
 
                     if(saveBtn){
                         saveBtn.addEventListener('click', async ()=>{
-                            // get selected files
+                            
                             const imgFile = detailImagen?.files?.[0];
                             const vidFile = detailVideo?.files?.[0];
                             let imgData = l.multimedia || '';
@@ -310,7 +309,7 @@ function renderPublicView(root){
                                     }
                                 }
 
-                                // Update lesson in storage
+                                
                                 const all = read(DB);
                                 const idx = all.findIndex(x=>x.id === l.id);
                                 if(idx !== -1){

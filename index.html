@@ -21,7 +21,7 @@
     <div id="userbox"></div>
   </header>
   <main id="app" class="container"></main>
-  <!-- Modal de login (oculto por defecto) -->
+  
   <div id="loginOverlay" class="modal-overlay" aria-hidden="true" inert>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <button class="modal-close" id="closeModal" aria-label="Cerrar">✕</button>
@@ -36,9 +36,9 @@
       </form>
     </div>
   </div>
-  <!-- Backdrop para formularios flotantes -->
+  
   <div id="formBackdrop" class="modal-overlay" aria-hidden="true" inert></div>
-  <!-- Detalle flotante para mostrar información completa de cursos/lecciones -->
+  
   <div id="detailOverlay" class="modal-overlay" aria-hidden="true" inert>
     <div class="modal" id="detailModal" role="dialog" aria-modal="true"></div>
   </div>
@@ -51,7 +51,7 @@
       const adminLink = document.getElementById("adminLink");
       const u = currentUser();
       
-      // Mostrar/ocultar enlace de Administrativos según si es admin
+      
       if(u && isAdmin()){
         adminLink.style.display = "inline-block";
       }else{
@@ -61,14 +61,14 @@
       if(u){
         box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
       }else{
-        // Usamos un botón que abre el modal en lugar de navegar a la página de login
+        
         box.innerHTML = `<a class="btn secondary" href="#" id="openLoginBtn">Ingresar</a>`;
       }
       loadPage('dashboard');
     });
   </script>
   <script>
-    // Global helpers to show/hide the detail modal from components
+    
     window.showDetail = function(html){
       const overlay = document.getElementById('detailOverlay');
       const modal = document.getElementById('detailModal');
@@ -79,7 +79,7 @@
       setTimeout(()=>{
         const btn = document.getElementById('closeDetail');
         btn && btn.addEventListener('click', ()=>{ window.hideDetail(); });
-        // focus first focusable
+        
         const focusable = modal.querySelector('button, a, input, textarea, select');
         focusable && focusable.focus();
       },50);
@@ -92,7 +92,7 @@
       overlay.setAttribute('inert','');
       modal.innerHTML = '';
     }
-    // Close detail when clicking backdrop
+    
     document.addEventListener('click', (e)=>{
       if(e.target && e.target.classList && e.target.classList.contains('modal-overlay')){
         if(e.target.id === 'detailOverlay') window.hideDetail();
@@ -100,9 +100,9 @@
     });
   </script>
   <script>
-    // Control del modal de login: apertura, cierre y envío
+    
     document.addEventListener('click', async (e) => {
-      // Abrir modal
+      
       const open = e.target.closest && e.target.closest('#openLoginBtn');
       if (open) {
         e.preventDefault();
@@ -113,7 +113,7 @@
         return;
       }
 
-      // Cerrar por botón o clic fuera
+      
       if (e.target.id === 'closeModal' || e.target.id === 'cancelLogin') {
         const overlay = document.getElementById('loginOverlay');
         overlay.setAttribute('aria-hidden', 'true');
@@ -125,7 +125,7 @@
       }
     });
 
-    // Envío del formulario del modal usando auth.login dinámico
+    
     document.getElementById('modalLoginForm').addEventListener('submit', async (evt) => {
       evt.preventDefault();
       const email = document.getElementById('modalEmail').value.trim();
@@ -133,12 +133,12 @@
       const auth = await import('./src/js/auth.js');
       const ok = auth.login(email, password);
       if (ok) {
-        // Actualizar userbox sin recargar
+        
         const box = document.getElementById('userbox');
         const adminLink = document.getElementById('adminLink');
         const u = auth.currentUser();
         box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
-        // Mostrar enlace de Administrativos si es admin
+        
         if(auth.isAdmin()){
           adminLink.style.display = "inline-block";
         }
