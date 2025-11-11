@@ -189,4 +189,39 @@ function renderPublicView(root){
     if(section){
         section.appendChild(grid);
     }
+
+    // Agregar click handlers para abrir panel individual del docente
+    setTimeout(()=>{
+        const items = grid.querySelectorAll('.card-item');
+        items.forEach((el, idx)=>{
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', ()=>{
+                const docente = data[idx];
+                const cursos = read('cursos').filter(c => c.docente === docente.codigo || c.docente === docente.email);
+                const totalHoras = cursos.reduce((acc, c)=>{
+                    const h = parseFloat((c.duracion||'').toString().replace(',', '.')) || 0;
+                    return acc + h;
+                }, 0);
+
+                const cursosHtml = cursos.length ? `<ul>${cursos.map(c=>`<li><strong>${c.codigo}</strong> — ${c.nombre} (${c.duracion||'-'} hrs) <span style="color:#666">[${c.visibilidad||''}]</span></li>`).join('')}</ul>` : '<p>No tiene cursos asignados.</p>';
+
+                const html = `
+                    <div>
+                        <h3>${docente.nombres} ${docente.apellidos}</h3>
+                        ${docente.foto ? `<img src="${docente.foto}" style="max-width:120px;height:auto;margin-bottom:8px;border-radius:8px"/>` : ''}
+                        <p><strong>Identificación:</strong> ${docente.identificacion||'-'}</p>
+                        <p><strong>Email:</strong> ${docente.email||'-'}</p>
+                        <p><strong>Área:</strong> ${docente.area||'-'}</p>
+                        <hr/>
+                        <h4>Carga académica</h4>
+                        <p><strong>Total de cursos:</strong> ${cursos.length}</p>
+                        <p><strong>Total de horas:</strong> ${totalHoras}</p>
+                        ${cursosHtml}
+                    </div>
+                `;
+
+                window.showDetail(html);
+            });
+        });
+    },20);
 }
