@@ -32,41 +32,32 @@ export function init(root){
         render();
     }
 
-    saveBtn.addEventListener("click", ()=>{
+    saveBtn.addEventListener("click", async ()=>{
         if(!isAdmin()) return;
         const imagenInput = root.querySelector("#imagen");
         const imagenFile = imagenInput?.files?.[0];
-        
-        if(imagenFile){
-            const reader = new FileReader();
-            reader.onload = (e)=>{
-                const modulo = {
-                    codigo: root.querySelector("#codigo").value.trim(),
-                    cursoCodigo: ddlCurso.value,
-                    nombre: root.querySelector("#nombre").value.trim(),
-                    descripcion: root.querySelector("#descripcion").value.trim(),
-                    imagen: e.target.result
-                };
-                if(!modulo.codigo || !modulo.cursoCodigo || !modulo.nombre){
-                    alert("Código, Curso y Nombre son obligatorios");
-                    return;
-                }
-                saveModulo(modulo);
-            };
-            reader.readAsDataURL(imagenFile);
-        } else {
+
+        try{
+            let imagenData = "";
+            if(imagenFile){
+                imagenData = await compressImage(imagenFile, 1000, 0.75);
+            }
+
             const modulo = {
                 codigo: root.querySelector("#codigo").value.trim(),
                 cursoCodigo: ddlCurso.value,
                 nombre: root.querySelector("#nombre").value.trim(),
                 descripcion: root.querySelector("#descripcion").value.trim(),
-                imagen: ""
+                imagen: imagenData
             };
             if(!modulo.codigo || !modulo.cursoCodigo || !modulo.nombre){
                 alert("Código, Curso y Nombre son obligatorios");
                 return;
             }
             saveModulo(modulo);
+        }catch(err){
+            console.error(err);
+            alert('Error procesando la imagen. Intenta con una imagen más pequeña.');
         }
     });
 
@@ -82,6 +73,39 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
+    }
+
+    function compressImage(file, maxWidth = 1000, quality = 0.75){
+        return new Promise((resolve, reject)=>{
+            const reader = new FileReader();
+            reader.onerror = ()=> reject(new Error('File read error'));
+            reader.onload = ()=>{
+                const img = new Image();
+                img.onload = ()=>{
+                    const ratio = img.width / img.height;
+                    let targetWidth = img.width;
+                    let targetHeight = img.height;
+                    if(img.width > maxWidth){
+                        targetWidth = maxWidth;
+                        targetHeight = Math.round(maxWidth / ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img,0,0,targetWidth,targetHeight);
+                    try{
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    }catch(e){
+                        reject(e);
+                    }
+                };
+                img.onerror = ()=> reject(new Error('Image load error'));
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     function render(){

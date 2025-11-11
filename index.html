@@ -16,6 +16,7 @@
       <a href="#" onclick="loadPage('cursos')">Cursos</a>
       <a href="#" onclick="loadPage('modulos')">Módulos</a>
       <a href="#" onclick="loadPage('lecciones')">Lecciones</a>
+      <a href="#" onclick="loadPage('administrativos')" id="adminLink" style="display:none;">Administrativos</a>
     </nav>
     <div id="userbox"></div>
   </header>
@@ -38,10 +39,19 @@
   <footer class="footer">© 2025 LMS ABC</footer>
   <script type="module">
     import { loadPage } from "./src/js/routes.js";
-    import { currentUser } from "./src/js/auth.js";
+    import { currentUser, isAdmin } from "./src/js/auth.js";
     window.addEventListener("DOMContentLoaded", ()=> {
       const box = document.getElementById("userbox");
+      const adminLink = document.getElementById("adminLink");
       const u = currentUser();
+      
+      // Mostrar/ocultar enlace de Administrativos según si es admin
+      if(u && isAdmin()){
+        adminLink.style.display = "inline-block";
+      }else{
+        adminLink.style.display = "none";
+      }
+      
       if(u){
         box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
       }else{
@@ -83,8 +93,13 @@
       if (ok) {
         // Actualizar userbox sin recargar
         const box = document.getElementById('userbox');
+        const adminLink = document.getElementById('adminLink');
         const u = auth.currentUser();
         box.innerHTML = `<span style="margin-left:8px">👤 ${u.nombres||''} ${u.apellidos||''}</span> <a class="btn secondary" href="./src/pages/login.html" onclick="event.preventDefault(); import('./src/js/auth.js').then(m=>m.logout());">Salir</a>`;
+        // Mostrar enlace de Administrativos si es admin
+        if(auth.isAdmin()){
+          adminLink.style.display = "inline-block";
+        }
         document.getElementById('loginOverlay').setAttribute('aria-hidden', 'true');
       } else {
         alert('Credenciales incorrectas');

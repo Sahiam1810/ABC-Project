@@ -10,7 +10,6 @@ export function init(root){
     if(!isAdmin()){
         const banner = document.createElement("div");
         banner.className = "card";
-        banner.innerHTML = `<strong>Vista de solo lectura.</strong> Inicia sesión para crear/editar/eliminar.`;
         root.prepend(banner);
         form?.querySelectorAll("input,textarea,select,button").forEach(el=>{ if(el.type !== "button") el.disabled = true; });
     }

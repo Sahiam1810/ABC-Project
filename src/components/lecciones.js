@@ -33,43 +33,33 @@ export function init(root){
         render();
     }
 
-    saveBtn.addEventListener("click", ()=>{
+    saveBtn.addEventListener("click", async ()=>{
         if(!isAdmin()) return;
         const multimediaInput = root.querySelector("#multimedia");
         const multimediaFile = multimediaInput?.files?.[0];
-        
-        if(multimediaFile){
-            const reader = new FileReader();
-            reader.onload = (e)=>{
-                const leccion = {
-                    id: cryptoRandom(),
-                    titulo: root.querySelector("#titulo").value.trim(),
-                    intensidad: root.querySelector("#intensidad").value.trim(),
-                    moduloCodigo: ddlModulo.value,
-                    contenido: root.querySelector("#contenido").value.trim(),
-                    multimedia: e.target.result
-                };
-                if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
-                    alert("Título, Intensidad y Módulo son obligatorios");
-                    return;
-                }
-                saveLeccion(leccion);
-            };
-            reader.readAsDataURL(multimediaFile);
-        } else {
+
+        try{
+            let multimediaData = "";
+            if(multimediaFile){
+                multimediaData = await compressImage(multimediaFile, 1200, 0.7);
+            }
+
             const leccion = {
                 id: cryptoRandom(),
                 titulo: root.querySelector("#titulo").value.trim(),
                 intensidad: root.querySelector("#intensidad").value.trim(),
                 moduloCodigo: ddlModulo.value,
                 contenido: root.querySelector("#contenido").value.trim(),
-                multimedia: ""
+                multimedia: multimediaData
             };
             if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
                 alert("Título, Intensidad y Módulo son obligatorios");
                 return;
             }
             saveLeccion(leccion);
+        }catch(err){
+            console.error(err);
+            alert('Error procesando el archivo multimedia. Prueba con una imagen más pequeña.');
         }
     });
 
@@ -86,6 +76,39 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
+    }
+
+    function compressImage(file, maxWidth = 1000, quality = 0.75){
+        return new Promise((resolve, reject)=>{
+            const reader = new FileReader();
+            reader.onerror = ()=> reject(new Error('File read error'));
+            reader.onload = ()=>{
+                const img = new Image();
+                img.onload = ()=>{
+                    const ratio = img.width / img.height;
+                    let targetWidth = img.width;
+                    let targetHeight = img.height;
+                    if(img.width > maxWidth){
+                        targetWidth = maxWidth;
+                        targetHeight = Math.round(maxWidth / ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img,0,0,targetWidth,targetHeight);
+                    try{
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    }catch(e){
+                        reject(e);
+                    }
+                };
+                img.onerror = ()=> reject(new Error('Image load error'));
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     function render(){

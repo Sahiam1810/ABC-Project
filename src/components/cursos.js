@@ -57,39 +57,18 @@ export function init(root){
         render();
     }
 
-    saveBtn.addEventListener("click", ()=>{
+    saveBtn.addEventListener("click", async ()=>{
         if(!isAdmin()) return;
         const imagenInput = root.querySelector("#imagen");
         const imagenFile = imagenInput?.files?.[0];
-        
-        if(imagenFile){
-            const reader = new FileReader();
-            reader.onload = (e)=>{
-                const curso = {
-                    codigo: root.querySelector("#codigo").value.trim(),
-                    nombre: root.querySelector("#nombre").value.trim(),
-                    descripcion: root.querySelector("#descripcion").value.trim(),
-                    docente: root.querySelector("#docente").value.trim(),
-                    duracion: root.querySelector("#duracion").value.trim(),
-                    etiquetas: root.querySelector("#etiquetas").value.trim(),
-                    imagen: e.target.result,
-                    visibilidad: root.querySelector("#visibilidad").value,
-                    createdAt: new Date().toISOString()
-                };
-                if(!curso.codigo || !curso.nombre || !curso.docente){
-                    alert("Código, Nombre y Docente son obligatorios");
-                    return;
-                }
 
-                const docentes = read("docentes");
-                const existeDocente = docentes.some(d => d.codigo === curso.docente || d.email === curso.docente);
-                if(!existeDocente){
-                    if(!confirm("El docente no existe. ¿Deseas guardar de todas formas?")) return;
-                }
-                saveCurso(curso);
-            };
-            reader.readAsDataURL(imagenFile);
-        } else {
+        try{
+            let imagenData = "";
+            if(imagenFile){
+                // compress image to reduce size before storing
+                imagenData = await compressImage(imagenFile, 1000, 0.75);
+            }
+
             const curso = {
                 codigo: root.querySelector("#codigo").value.trim(),
                 nombre: root.querySelector("#nombre").value.trim(),
@@ -97,7 +76,7 @@ export function init(root){
                 docente: root.querySelector("#docente").value.trim(),
                 duracion: root.querySelector("#duracion").value.trim(),
                 etiquetas: root.querySelector("#etiquetas").value.trim(),
-                imagen: "",
+                imagen: imagenData,
                 visibilidad: root.querySelector("#visibilidad").value,
                 createdAt: new Date().toISOString()
             };
@@ -112,6 +91,9 @@ export function init(root){
                 if(!confirm("El docente no existe. ¿Deseas guardar de todas formas?")) return;
             }
             saveCurso(curso);
+        }catch(err){
+            console.error(err);
+            alert('Error procesando la imagen. Intenta con una imagen más pequeña.');
         }
     });
 
@@ -127,6 +109,40 @@ export function init(root){
         write(DB, data);
         form.reset();
         render();
+    }
+
+    // Compress an image file and return a DataURL. Reduces dimensions and quality to avoid exceeding localStorage.
+    function compressImage(file, maxWidth = 1000, quality = 0.75){
+        return new Promise((resolve, reject)=>{
+            const reader = new FileReader();
+            reader.onerror = ()=> reject(new Error('File read error'));
+            reader.onload = ()=>{
+                const img = new Image();
+                img.onload = ()=>{
+                    const ratio = img.width / img.height;
+                    let targetWidth = img.width;
+                    let targetHeight = img.height;
+                    if(img.width > maxWidth){
+                        targetWidth = maxWidth;
+                        targetHeight = Math.round(maxWidth / ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img,0,0,targetWidth,targetHeight);
+                    try{
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    }catch(e){
+                        reject(e);
+                    }
+                };
+                img.onerror = ()=> reject(new Error('Image load error'));
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     function render(){
