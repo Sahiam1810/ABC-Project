@@ -38,6 +38,10 @@
   </div>
   <!-- Backdrop para formularios flotantes -->
   <div id="formBackdrop" class="modal-overlay" aria-hidden="true" inert></div>
+  <!-- Detalle flotante para mostrar información completa de cursos/lecciones -->
+  <div id="detailOverlay" class="modal-overlay" aria-hidden="true" inert>
+    <div class="modal" id="detailModal" role="dialog" aria-modal="true"></div>
+  </div>
   <footer class="footer">© 2025 LMS ABC</footer>
   <script type="module">
     import { loadPage } from "./src/js/routes.js";
@@ -61,6 +65,38 @@
         box.innerHTML = `<a class="btn secondary" href="#" id="openLoginBtn">Ingresar</a>`;
       }
       loadPage('dashboard');
+    });
+  </script>
+  <script>
+    // Global helpers to show/hide the detail modal from components
+    window.showDetail = function(html){
+      const overlay = document.getElementById('detailOverlay');
+      const modal = document.getElementById('detailModal');
+      if(!overlay || !modal) return;
+      modal.innerHTML = html + '<div style="text-align:right;margin-top:12px"><button class="btn" id="closeDetail">Cerrar</button></div>';
+      overlay.removeAttribute('inert');
+      overlay.setAttribute('aria-hidden','false');
+      setTimeout(()=>{
+        const btn = document.getElementById('closeDetail');
+        btn && btn.addEventListener('click', ()=>{ window.hideDetail(); });
+        // focus first focusable
+        const focusable = modal.querySelector('button, a, input, textarea, select');
+        focusable && focusable.focus();
+      },50);
+    }
+    window.hideDetail = function(){
+      const overlay = document.getElementById('detailOverlay');
+      const modal = document.getElementById('detailModal');
+      if(!overlay || !modal) return;
+      overlay.setAttribute('aria-hidden','true');
+      overlay.setAttribute('inert','');
+      modal.innerHTML = '';
+    }
+    // Close detail when clicking backdrop
+    document.addEventListener('click', (e)=>{
+      if(e.target && e.target.classList && e.target.classList.contains('modal-overlay')){
+        if(e.target.id === 'detailOverlay') window.hideDetail();
+      }
     });
   </script>
   <script>

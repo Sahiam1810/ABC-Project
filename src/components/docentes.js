@@ -9,8 +9,9 @@ export function init(root){
     let editIndex = -1;
 
     if(!isAdmin()){
-        // Ocultar formulario y tabla para usuarios no-admin
+        // Ocultar formulario, tabla y botón Añadir para usuarios no-admin
         if(form) form.style.display = 'none';
+        if(addBtn) addBtn.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
         renderPublicView(root);

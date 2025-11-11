@@ -16,8 +16,9 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        // Ocultar formulario y tabla para usuarios públicos
+        // Ocultar formulario, tabla y botón Añadir para usuarios públicos
         if(form) form.style.display = 'none';
+        if(addBtn) addBtn.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
     }
@@ -39,13 +40,33 @@ export function init(root){
 
     saveBtn.addEventListener("click", async ()=>{
         if(!isAdmin()) return;
-        const multimediaInput = root.querySelector("#multimedia");
-        const multimediaFile = multimediaInput?.files?.[0];
+        const imagenInput = root.querySelector("#imagen");
+        const imagenFile = imagenInput?.files?.[0];
+        const videoInput = root.querySelector("#videoFile");
+        const videoFile = videoInput?.files?.[0];
 
         try{
-            let multimediaData = "";
-            if(multimediaFile){
-                multimediaData = await compressImage(multimediaFile, 1200, 0.7);
+            let imagenData = "";
+            if(imagenFile){
+                imagenData = await compressImage(imagenFile, 1200, 0.7);
+            }
+
+            let videoData = "";
+            if(videoFile){
+                // Limit naive localStorage persistence for videos: only accept small files (<= 1MB) into DataURL
+                const MAX_BYTES = 1024 * 1024; // 1MB
+                if(videoFile.size > MAX_BYTES){
+                    if(!confirm('El video es mayor a 1MB y podría no guardarse en el almacenamiento local. ¿Deseas continuar sin guardarlo?')){
+                        return;
+                    }
+                } else {
+                    videoData = await new Promise((res, rej)=>{
+                        const r = new FileReader();
+                        r.onerror = ()=> rej(new Error('File read error'));
+                        r.onload = ()=> res(r.result);
+                        r.readAsDataURL(videoFile);
+                    });
+                }
             }
 
             const leccion = {
@@ -54,7 +75,8 @@ export function init(root){
                 intensidad: root.querySelector("#intensidad").value.trim(),
                 moduloCodigo: ddlModulo.value,
                 contenido: root.querySelector("#contenido").value.trim(),
-                multimedia: multimediaData
+                multimedia: imagenData,
+                video: videoData
             };
             if(!leccion.titulo || !leccion.intensidad || !leccion.moduloCodigo){
                 alert("Título, Intensidad y Módulo son obligatorios");
@@ -63,7 +85,7 @@ export function init(root){
             saveLeccion(leccion);
         }catch(err){
             console.error(err);
-            alert('Error procesando el archivo multimedia. Prueba con una imagen más pequeña.');
+            alert('Error procesando los archivos multimedia. Prueba con archivos más pequeños.');
         }
     });
 
@@ -123,7 +145,7 @@ export function init(root){
                 <td>${l.titulo}</td>
                 <td>${l.intensidad}</td>
                 <td>${l.moduloCodigo}</td>
-                <td>${l.multimedia ? `<img src="${l.multimedia}" width="40" />` : ""}</td>
+                <td>${l.multimedia ? `<img src="${l.multimedia}" width="40" />` : (l.video? '🎬' : '')}</td>
                 <td>
                     ${isAdmin()?`<button class="btn" data-edit="${i}">Editar</button>
                     <button class="btn danger" data-del="${i}">Eliminar</button>`:""}
@@ -196,7 +218,7 @@ function renderPublicView(root){
     grid.className = 'cards-grid';
     grid.innerHTML = data.map(l=>`
         <div class="card-item">
-            ${l.multimedia ? `<img src="${l.multimedia}" alt="${l.titulo}"/>` : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin multimedia</div>`}
+            ${l.multimedia ? `<img src="${l.multimedia}" alt="${l.titulo}"/>` : (l.video? '<div style="width:100%;height:140px;background:#222;color:#fff;display:flex;align-items:center;justify-content:center">Video</div>' : `<div style="width:100%;height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">Sin multimedia</div>`)}
             <div class="card-item-body">
                 <h4>${l.titulo}</h4>
                 <p class="meta"><strong>Intensidad:</strong> ${l.intensidad||'-'}</p>
@@ -204,6 +226,112 @@ function renderPublicView(root){
             </div>
         </div>
     `).join('');
+
+    // Hook clicks to open detail overlay and, for admins, provide upload controls inside the detail
+    setTimeout(()=>{
+        const items = grid.querySelectorAll('.card-item');
+        items.forEach((el, idx)=>{
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', ()=>{
+                const l = data[idx];
+                const html = `
+                    <h3>${l.titulo}</h3>
+                    ${l.multimedia ? `<img src="${l.multimedia}" style="max-width:100%;height:auto;margin-bottom:8px"/>` : ''}
+                    ${l.video ? `<video controls style="max-width:100%;display:block;margin-bottom:8px"><source src="${l.video}"></video>` : ''}
+                    <p><strong>Intensidad:</strong> ${l.intensidad||'-'}</p>
+                    <p><strong>Módulo:</strong> ${l.moduloCodigo||'-'}</p>
+                    <p>${l.contenido||''}</p>
+                    ${isAdmin()? `
+                        <hr/>
+                        <h4>Adjuntar / actualizar multimedia</h4>
+                        <label>Imagen (PNG/JPG)</label>
+                        <input id="detail_imagen" type="file" accept="image/png,image/jpeg" />
+                        <div id="preview_imagen" style="margin-top:8px"></div>
+                        <label style="margin-top:8px">Video (MP4)</label>
+                        <input id="detail_video" type="file" accept="video/mp4,video/*" />
+                        <div id="preview_video" style="margin-top:8px"></div>
+                        <div style="text-align:right;margin-top:10px">
+                            <button class="btn" id="saveMedia">Guardar multimedia</button>
+                        </div>
+                    ` : ''}
+                `;
+                window.showDetail(html);
+
+                // After overlay content is added, wire preview and save only for admins
+                setTimeout(async ()=>{
+                    try{
+                        const auth = await import('../js/auth.js');
+                        if(!auth.isAdmin()) return;
+                    }catch(e){ /* ignore - if we cannot import, assume not admin */ }
+
+                    const detailImagen = document.getElementById('detail_imagen');
+                    const previewImagen = document.getElementById('preview_imagen');
+                    const detailVideo = document.getElementById('detail_video');
+                    const previewVideo = document.getElementById('preview_video');
+                    const saveBtn = document.getElementById('saveMedia');
+
+                    if(detailImagen){
+                        detailImagen.addEventListener('change', (ev)=>{
+                            const f = ev.target.files && ev.target.files[0];
+                            if(!f) return; 
+                            const r = new FileReader();
+                            r.onload = ()=>{ previewImagen.innerHTML = `<img src="${r.result}" style="max-width:100%;height:auto"/>`; };
+                            r.readAsDataURL(f);
+                        });
+                    }
+                    if(detailVideo){
+                        detailVideo.addEventListener('change', (ev)=>{
+                            const f = ev.target.files && ev.target.files[0];
+                            if(!f) return;
+                            const url = URL.createObjectURL(f);
+                            previewVideo.innerHTML = `<video controls style="max-width:100%;display:block"><source src="${url}"></video>`;
+                        });
+                    }
+
+                    if(saveBtn){
+                        saveBtn.addEventListener('click', async ()=>{
+                            // get selected files
+                            const imgFile = detailImagen?.files?.[0];
+                            const vidFile = detailVideo?.files?.[0];
+                            let imgData = l.multimedia || '';
+                            let vidData = l.video || '';
+                            try{
+                                if(imgFile){ imgData = await compressImage(imgFile, 1200, 0.7); }
+                                if(vidFile){
+                                    const MAX_BYTES = 1024 * 1024; // 1MB
+                                    if(vidFile.size <= MAX_BYTES){
+                                        vidData = await new Promise((res, rej)=>{
+                                            const r = new FileReader(); r.onerror = ()=> rej(new Error('read')); r.onload = ()=> res(r.result); r.readAsDataURL(vidFile);
+                                        });
+                                    } else {
+                                        if(!confirm('El video es mayor a 1MB y puede no guardarse en localStorage. ¿Deseas continuar sin guardarlo?')){
+                                            return;
+                                        }
+                                    }
+                                }
+
+                                // Update lesson in storage
+                                const all = read(DB);
+                                const idx = all.findIndex(x=>x.id === l.id);
+                                if(idx !== -1){
+                                    all[idx].multimedia = imgData;
+                                    if(vidData) all[idx].video = vidData;
+                                    write(DB, all);
+                                    alert('Multimedia guardada.');
+                                    window.hideDetail();
+                                } else {
+                                    alert('No se encontró la lección para actualizar.');
+                                }
+                            }catch(err){
+                                console.error(err);
+                                alert('Error guardando archivos. Usa archivos más pequeños.');
+                            }
+                        });
+                    }
+                },60);
+            });
+        });
+    },20);
     
     const section = root.querySelector('section[data-page-root]');
     if(section){

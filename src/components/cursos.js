@@ -32,8 +32,9 @@ export function init(root){
     }
 
     if(!isAdmin()){
-        // Ocultar formulario y tabla para usuarios públicos
+        // Ocultar formulario, tabla, filtros y botón Añadir para usuarios públicos
         if(form) form.style.display = 'none';
+        if(addBtn) addBtn.style.display = 'none';
         filterBar.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
@@ -259,6 +260,31 @@ function renderPublicView(root){
             </div>
         </div>
     `).join('');
+
+    // Attach click handlers to open detail overlay with full course info
+    setTimeout(()=>{
+        const items = grid.querySelectorAll('.card-item');
+        items.forEach((el, idx)=>{
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', ()=>{
+                const c = data[idx];
+                const modulos = read('modulos').filter(m=>m.cursoCodigo === c.codigo);
+                const modulesHtml = modulos.length ? `<ul>${modulos.map(m=>`<li>${m.codigo} - ${m.nombre}</li>`).join('')}</ul>` : '<p>No hay módulos.</p>';
+                const html = `
+                    <h3>${c.nombre}</h3>
+                    ${c.imagen ? `<img src="${c.imagen}" style="max-width:100%;height:auto;margin-bottom:8px"/>` : ''}
+                    <p><strong>Código:</strong> ${c.codigo}</p>
+                    <p><strong>Docente:</strong> ${c.docente||'-'}</p>
+                    <p><strong>Duración:</strong> ${c.duracion||'-'}</p>
+                    <p><strong>Etiquetas:</strong> ${c.etiquetas||'-'}</p>
+                    <p>${c.descripcion||''}</p>
+                    <h4>Módulos</h4>
+                    ${modulesHtml}
+                `;
+                window.showDetail(html);
+            });
+        });
+    },20);
     
     const section = root.querySelector('section[data-page-root]');
     if(section){

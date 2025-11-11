@@ -17,6 +17,7 @@ export function init(root){
 
     if(!isAdmin()){
         if(form) form.style.display = 'none';
+        if(addBtn) addBtn.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
     }
