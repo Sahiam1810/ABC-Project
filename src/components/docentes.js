@@ -190,7 +190,6 @@ function renderPublicView(root){
         section.appendChild(grid);
     }
 
-    // Agregar click handlers para abrir panel individual del docente
     setTimeout(()=>{
         const items = grid.querySelectorAll('.card-item');
         items.forEach((el, idx)=>{
