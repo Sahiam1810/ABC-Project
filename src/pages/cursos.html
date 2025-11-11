@@ -7,10 +7,29 @@
         <textarea id="descripcion" placeholder="Descripción"></textarea>
         <input id="duracion" placeholder="Duración (horas)">
         <input id="etiquetas" placeholder="Etiquetas (coma)">
+        <select id="categoria" required>
+            <option value="">-- Selecciona categoría --</option>
+            <option value="Ciencias">Ciencias</option>
+            <option value="Tecnologia">Tecnología</option>
+            <option value="Idiomas">Idiomas</option>
+            <option value="Humanidades">Humanidades</option>
+            <option value="Artes">Artes</option>
+            <option value="Negocios">Negocios</option>
+        </select>
+        <select id="tipo" required>
+            <option value="">-- Selecciona tipo --</option>
+            <option value="virtual">Virtual</option>
+            <option value="presencial">Presencial</option>
+            <option value="hibrido">Híbrido</option>
+        </select>
+        <select id="estado" required>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+        </select>
         <input id="imagen" type="file" accept="image/png,image/jpeg" placeholder="Imagen del curso (PNG o JPG)">
         <select id="visibilidad">
-        <option value="publico">Público</option>
-        <option value="privado">Privado</option>
+            <option value="publico">Público</option>
+            <option value="privado">Privado</option>
         </select>
         <button id="save" class="btn" type="button">Guardar</button>
     </form>
@@ -22,7 +41,7 @@
     <div class="card">
         <table>
             <thead><tr>
-                <th>Código</th><th>Nombre</th><th>Docente</th><th>Duración</th><th>Imagen</th><th>Visibilidad</th><th>Acciones</th>
+                <th>Código</th><th>Nombre</th><th>Docente</th><th>Duración</th><th>Categoría</th><th>Tipo</th><th>Estado</th><th>Imagen</th><th>Visibilidad</th><th>Acciones</th>
             </tr></thead>
             <tbody id="dataTable"></tbody>
         </table>

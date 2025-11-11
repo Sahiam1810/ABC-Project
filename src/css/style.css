@@ -240,3 +240,53 @@ input#search{
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 15px;
     }
+
+/* Estilos para filtros colapsables */
+.filter-toggle-btn {
+    background: #c26ffa;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.filter-toggle-btn:hover {
+    background: #a94bdb;
+}
+
+.filter-toggle-btn::after {
+    content: '▼';
+    transition: transform 0.3s ease;
+}
+
+.filter-toggle-btn.collapsed::after {
+    transform: rotate(-90deg);
+}
+
+.filter-panel {
+    max-height: 500px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.filter-panel.collapsed {
+    max-height: 0;
+    margin-bottom: 0;
+    visibility: hidden;
+}
+
+.filter-panel > div {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    background: #DCD0FF;
+    border-radius: 8px;
+}

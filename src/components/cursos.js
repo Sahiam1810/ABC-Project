@@ -13,15 +13,42 @@ export function init(root){
     const filterBar = document.createElement("div");
     filterBar.className = "card";
     filterBar.innerHTML = `
-        <div class="grid grid-3">
-            <input id="q" placeholder="Buscar por nombre o etiqueta"/>
-            <select id="fVis">
-                <option value="">Todas las visibilidades</option>
-                <option value="publico">Público</option>
-                <option value="privado">Privado</option>
-            </select>
-            <button class="btn" id="apply">Aplicar filtros</button>
-        </div>`;
+        <button class="filter-toggle-btn collapsed" id="toggleFilters">🔍 Mostrar filtros</button>
+        <div id="filterPanel" class="filter-panel collapsed">
+            <div class="grid grid-3">
+                <input id="q" placeholder="Buscar por nombre o etiqueta"/>
+                <select id="fVis">
+                    <option value="">Todas las visibilidades</option>
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                </select>
+                <select id="fEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+                <select id="fTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="virtual">Virtual</option>
+                    <option value="presencial">Presencial</option>
+                    <option value="hibrido">Híbrido</option>
+                </select>
+                <input id="fFechaDesde" type="date" placeholder="Desde"/>
+                <input id="fFechaHasta" type="date" placeholder="Hasta"/>
+                <button class="btn" id="apply">Aplicar filtros</button>
+            </div>
+        </div>
+    `;
+
+    // Toggle para mostrar/ocultar filtros
+    const toggleBtn = filterBar.querySelector("#toggleFilters");
+    const filterPanel = filterBar.querySelector("#filterPanel");
+    
+    toggleBtn.addEventListener("click", ()=>{
+        filterPanel.classList.toggle("collapsed");
+        toggleBtn.classList.toggle("collapsed");
+        toggleBtn.textContent = filterPanel.classList.contains("collapsed") ? "🔍 Mostrar filtros" : "🔍 Ocultar filtros";
+    });
 
 
     const formEl = root.querySelector("#frmCurso");
@@ -38,12 +65,19 @@ export function init(root){
         filterBar.style.display = 'none';
         const tableParent = table?.closest('.card');
         if(tableParent) tableParent.style.display = 'none';
+    } else {
+        // Para admins, mostrar la barra de filtros (colapsada por defecto)
+        filterBar.style.display = 'block';
     }
 
     function getFilters(){
         return {
             q: filterBar.querySelector("#q").value.trim().toLowerCase(),
-            vis: filterBar.querySelector("#fVis").value
+            vis: filterBar.querySelector("#fVis").value,
+            estado: filterBar.querySelector("#fEstado").value,
+            tipo: filterBar.querySelector("#fTipo").value,
+            fechaDesde: filterBar.querySelector("#fFechaDesde").value,
+            fechaHasta: filterBar.querySelector("#fFechaHasta").value
         };
     }
 
@@ -81,12 +115,15 @@ export function init(root){
                 docente: root.querySelector("#docente").value.trim(),
                 duracion: root.querySelector("#duracion").value.trim(),
                 etiquetas: root.querySelector("#etiquetas").value.trim(),
+                categoria: root.querySelector("#categoria").value,
+                tipo: root.querySelector("#tipo").value,
+                estado: root.querySelector("#estado").value,
                 imagen: imagenData,
                 visibilidad: root.querySelector("#visibilidad").value,
                 createdAt: new Date().toISOString()
             };
-            if(!curso.codigo || !curso.nombre || !curso.docente){
-                alert("Código, Nombre y Docente son obligatorios");
+            if(!curso.codigo || !curso.nombre || !curso.docente || !curso.categoria || !curso.tipo || !curso.estado){
+                alert("Código, Nombre, Docente, Categoría, Tipo y Estado son obligatorios");
                 return;
             }
 
@@ -153,12 +190,23 @@ export function init(root){
 
     function render(){
         const data = read(DB);
-        const { q, vis } = getFilters();
+        const { q, vis, estado, tipo, fechaDesde, fechaHasta } = getFilters();
         const filtered = data.filter(c => {
             const text = (c.nombre + " " + (c.etiquetas||"")).toLowerCase();
             const okQ = q ? text.includes(q) : true;
             const okV = vis ? c.visibilidad === vis : true;
-            return okQ && okV;
+            const okE = estado ? c.estado === estado : true;
+            const okT = tipo ? c.tipo === tipo : true;
+            
+            // Filtro por rango de fecha
+            let okF = true;
+            if(fechaDesde || fechaHasta){
+                const cursoDate = new Date(c.createdAt).toISOString().split('T')[0];
+                if(fechaDesde && cursoDate < fechaDesde) okF = false;
+                if(fechaHasta && cursoDate > fechaHasta) okF = false;
+            }
+            
+            return okQ && okV && okE && okT && okF;
         });
 
         table.innerHTML = filtered.map((c,i)=>`
@@ -167,6 +215,9 @@ export function init(root){
                 <td>${c.nombre}</td>
                 <td>${c.docente}</td>
                 <td>${c.duracion||"-"}</td>
+                <td><span class="badge">${c.categoria||'-'}</span></td>
+                <td>${c.tipo||'-'}</td>
+                <td><span class="badge" style="background:${c.estado==='activo'?'#4CAF50':'#f44336'}">${c.estado}</span></td>
                 <td>${c.imagen ? `<img src="${c.imagen}" width="40" />` : ""}</td>
                 <td><span class="badge">${c.visibilidad}</span></td>
                 <td>
@@ -193,8 +244,12 @@ export function init(root){
                 root.querySelector("#docente").value = c.docente;
                 root.querySelector("#duracion").value = c.duracion||"";
                 root.querySelector("#etiquetas").value = c.etiquetas||"";
+                root.querySelector("#categoria").value = c.categoria||"";
+                root.querySelector("#tipo").value = c.tipo||"";
+                root.querySelector("#estado").value = c.estado||"activo";
                 root.querySelector("#visibilidad").value = c.visibilidad;
                 saveBtn.textContent = "Actualizar";
+                showFormModal();
             });
         });
 
