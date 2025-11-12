@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8" />
     <title>LMS ABC</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <link rel="stylesheet" href="assets/estilos.css" />
     <script type="module" src="js/main.js" defer></script>
 </head>
 <body>
     <public-header></public-header>
+
+    <main style="max-width:1100px;margin:auto;padding:12px">
+        <public-home data-route="home"></public-home>
+        <public-docentes data-route="docentes" style="display:none"></public-docentes>
+        <public-cursos data-route="cursos" style="display:none"></public-cursos>
+    </main>
+
     <footer-component></footer-component>
+    <modal-box></modal-box>
+    <login-float></login-float>
 </body>
 </html>
