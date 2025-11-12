@@ -161,11 +161,17 @@ https://drive.google.com/file/d/1vETG9idyIdevjgPXs9I_3NjcLH0LAA-W/view?usp=shari
 Los datos se almacenan en localStorage bajo la clave sistemaCursos, con estructura:
 
 {
+
   "administrativos": [],
+
   "docentes": [],
+
   "cursos": [],
+
   "modulos": [],
+
   "lecciones": []
+  
 }
 
 Cada registro se identifica mediante un código único (uid) generado al momento de crearse.
