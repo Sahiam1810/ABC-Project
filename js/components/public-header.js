@@ -19,7 +19,7 @@ class PublicHeader extends HTMLElement{
         this.tabs.forEach(t=>t.classList.remove('active')); el.classList.add('active');
         document.querySelectorAll('[data-route]').forEach(v=>{
             v.style.display = v.getAttribute('data-route')===route?'block':'none';
-            if(v.refresh) v.refresh(); // re-render si existe
+            if(v.refresh) v.refresh();
         });
     }
 }

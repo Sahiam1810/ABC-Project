@@ -69,7 +69,8 @@ class CrudCursos extends HTMLElement{
         <div class="toolbar">
             <h3>Cursos</h3>
             <div>
-                <button id="add" class="btn" ${!tieneDocentes?'disabled':''}>Crear curso</button>
+            <button id="add" class="btn">Crear curso</button>
+
             </div>
         </div>
     ${!tieneDocentes ? `
@@ -111,12 +112,18 @@ class CrudCursos extends HTMLElement{
         rows.append(tr);
     });
 
-        const add = this.querySelector('#add');
-        if (add) add.onclick = () => {
-            if (!tieneDocentes) { alert('Primero crea un docente.'); return; }
-            const f = formCurso(); modal().show('Crear curso', f);
-            f.addEventListener('saved', ()=> this.render());
-        };
+    const add = this.querySelector('#add');
+    if (add) add.onclick = () => {
+      const dbNow = read(); // lee el estado actual
+        if (!dbNow.docentes.length) {
+            alert('⚠️ Debes crear un docente antes de poder crear un curso.');
+            return;
+        }
+        const f = formCurso();
+        modal().show('Crear curso', f);
+        f.addEventListener('saved', () => this.render());
+    };
+    
     }
 }
 customElements.define('crud-cursos', CrudCursos);

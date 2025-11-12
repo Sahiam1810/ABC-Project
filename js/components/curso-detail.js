@@ -3,10 +3,16 @@ import { read } from '../localstore.js';
 
 class CursoDetail extends HTMLElement{
     connectedCallback(){
-        this.innerHTML=`<div class="modal" id="m"><div class="box">
-        <header><h3 id="t">Curso</h3>
-        <button class="btn outline" id="x">Cerrar</button></header>
-        <div id="c"></div></div></div>`;
+        this.innerHTML=`
+        
+        <div class="modal" id="m">
+            <div class="box">
+                <header>
+                    <h3 id="t">Curso</h3>
+                    <button class="btn outline" id="x">Cerrar</button>
+                </header>
+            <div id="c"></div></div>
+        </div>`;
         this.querySelector('#x').onclick=()=>this.close();
     }
     open(codigo){
