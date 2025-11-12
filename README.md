@@ -188,3 +188,7 @@ Validación de relaciones (por ejemplo, curso no se crea sin docente).
 Consistencia de estilos y paleta visual.
 
 Control de sesión con sessionStorage.
+
+# Manual de instrucciones de como ejecutar la aplicacion
+
+file:///C:/Users/LENOVO/Downloads/Manual_de_UsuarioABC.pdf
