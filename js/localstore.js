@@ -27,7 +27,8 @@ export function initDB() {
             docentes: [],
             cursos: [],
             modulos: [],
-            lecciones: []
+            lecciones: [],
+            estudiantes: []
     };
     setJSON(DB_NAME, db);
     }

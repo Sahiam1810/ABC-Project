@@ -1,6 +1,7 @@
 import { read, write, getSession, logout, initDB } from '../localstore.js';
 import './crud-administrativos.js'; import './crud-docentes.js';
 import './crud-cursos.js'; import './crud-modulos.js'; import './crud-lecciones.js';
+import './crud-estudiantes.js'
 
 class AdminDashboard extends HTMLElement{
     connectedCallback(){
@@ -31,6 +32,7 @@ class AdminDashboard extends HTMLElement{
             <span class="tab" data-tab="lecciones">Lecciones</span>
             <span class="tab" data-tab="docentes">Docentes</span>
             <span class="tab" data-tab="admins">Administrativos</span>
+            <span class="tab" data-tab="estudiantes">Estudiantes</span>
         </div>
 
         <section class="grid">
@@ -60,8 +62,14 @@ updateKpis(){
 open(tab,el){
     this.tabs.forEach(t=>t.classList.remove('active')); el.classList.add('active');
     const host=this.querySelector('#panel'); host.innerHTML='';
-    const map={cursos:'crud-cursos',modulos:'crud-modulos',lecciones:'crud-lecciones',
-            docentes:'crud-docentes',admins:'crud-administrativos'};
+    const map={
+        cursos:'crud-cursos',
+        modulos:'crud-modulos',
+        lecciones:'crud-lecciones',
+        docentes:'crud-docentes',
+        admins:'crud-administrativos',
+        estudiantes: 'crud-estudiantes'
+    };
     host.append(document.createElement(map[tab]));
     host.firstElementChild.addEventListener('db:changed',()=>this.updateKpis());
     }
