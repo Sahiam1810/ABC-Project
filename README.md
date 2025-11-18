@@ -192,3 +192,5 @@ Control de sesión con sessionStorage.
 # Manual de instrucciones de como ejecutar la aplicacion
 
 file:///C:/Users/LENOVO/Downloads/Manual_de_UsuarioABC.pdf
+
+hola
